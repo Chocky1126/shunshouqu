@@ -1,0 +1,13 @@
+<resources>
+    <string name="widget_name">顺手取</string>
+    <string name="widget_description">查看取件码并在桌面标记已取</string>
+    <string name="widget_empty">没有待取件</string>
+    <string name="widget_open_app">打开顺手取</string>
+    <string name="widget_total_empty">0 件待取</string>
+    <string name="widget_preview_total">2 件待取</string>
+    <string name="widget_preview_station_first">小区东门</string>
+    <string name="widget_preview_station_second">快递柜</string>
+    <!--suppress TypographyDashes Pickup codes preserve literal ASCII separators. -->
+    <string name="widget_preview_code_first">2-1-003</string>
+    <string name="widget_preview_code_second">001234</string>
+</resources>

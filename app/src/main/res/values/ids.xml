@@ -1,0 +1,18 @@
+<resources>
+    <item name="home_menu" type="id" />
+    <item name="add_code" type="id" />
+    <item name="code_input" type="id" />
+    <item name="input_status" type="id" />
+    <item name="station_settings" type="id" />
+    <item name="station_name" type="id" />
+    <item name="station_formats" type="id" />
+    <item name="station_error" type="id" />
+    <item name="total_count" type="id" />
+    <item name="batch_source" type="id" />
+    <item name="focus_code" type="id" />
+    <item name="edit_code" type="id" />
+    <item name="edit_station" type="id" />
+    <item name="edit_error" type="id" />
+    <item name="guide_content_scroll" type="id" />
+    <item name="guide_footer" type="id" />
+</resources>

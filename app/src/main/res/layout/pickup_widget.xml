@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/widget_background">
+
+    <LinearLayout
+        android:id="@+id/widget_header"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/pixel_parcel"
+            android:contentDescription="@null" />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="@string/widget_name"
+            android:textColor="#33291E"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/widget_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_total_empty"
+            android:textColor="#7A6A57"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/widget_empty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="@string/widget_empty"
+        android:textColor="#7A6A57"
+        android:textSize="18sp" />
+
+    <LinearLayout android:id="@+id/widget_row_1" style="@style/WidgetPickupRow">
+        <TextView android:id="@+id/widget_code_1" style="@style/WidgetCode"/>
+        <TextView android:id="@+id/widget_station_1" style="@style/WidgetStation"/>
+        <TextView android:id="@+id/widget_done_1" style="@style/WidgetDone"/>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/widget_row_2" style="@style/WidgetPickupRow">
+        <TextView android:id="@+id/widget_code_2" style="@style/WidgetCode"/>
+        <TextView android:id="@+id/widget_station_2" style="@style/WidgetStation"/>
+        <TextView android:id="@+id/widget_done_2" style="@style/WidgetDone"/>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/widget_row_3" style="@style/WidgetPickupRow">
+        <TextView android:id="@+id/widget_code_3" style="@style/WidgetCode"/>
+        <TextView android:id="@+id/widget_station_3" style="@style/WidgetStation"/>
+        <TextView android:id="@+id/widget_done_3" style="@style/WidgetDone"/>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/widget_row_4" style="@style/WidgetPickupRow">
+        <TextView android:id="@+id/widget_code_4" style="@style/WidgetCode"/>
+        <TextView android:id="@+id/widget_station_4" style="@style/WidgetStation"/>
+        <TextView android:id="@+id/widget_done_4" style="@style/WidgetDone"/>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/widget_row_5" style="@style/WidgetPickupRow">
+        <TextView android:id="@+id/widget_code_5" style="@style/WidgetCode"/>
+        <TextView android:id="@+id/widget_station_5" style="@style/WidgetStation"/>
+        <TextView android:id="@+id/widget_done_5" style="@style/WidgetDone"/>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/widget_row_6" style="@style/WidgetPickupRow">
+        <TextView android:id="@+id/widget_code_6" style="@style/WidgetCode"/>
+        <TextView android:id="@+id/widget_station_6" style="@style/WidgetStation"/>
+        <TextView android:id="@+id/widget_done_6" style="@style/WidgetDone"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_filler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_footer"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:gravity="center"
+        android:text="@string/widget_open_app"
+        android:textColor="#B34B16"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+</LinearLayout>

@@ -1,0 +1,1 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"><application><provider android:name="cn.pickup.pocket.ImportImageProvider" android:authorities="cn.pickup.pocket.test.images" android:exported="true" android:grantUriPermissions="true"/></application></manifest>
