@@ -176,7 +176,7 @@ public class OnboardingTest {
     Onboarding.complete(context);
     Intent intent = new Intent(context, FeaturesActivity.class).putExtra("mode", "more");
     try (ActivityScenario<FeaturesActivity> ignored = ActivityScenario.launch(intent)) {
-      onView(withText("使用引导")).perform(click());
+      onView(withText("使用引导")).perform(androidx.test.espresso.action.ViewActions.scrollTo(), click());
       onView(withText("取件码，只留在手机里")).check(matches(isDisplayed()));
       onView(withText("跳过引导")).perform(click());
     }

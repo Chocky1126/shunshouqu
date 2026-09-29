@@ -173,8 +173,7 @@ public class WidgetTest {
     try (ActivityScenario<FeaturesActivity> ignored =
         ActivityScenario.launch(
             new Intent(context, FeaturesActivity.class).putExtra("mode", "more"))) {
-      onView(withText("桌面小部件")).check(matches(isDisplayed()));
-      onView(withText("添加到桌面")).check(matches(isDisplayed()));
+      onView(withText("桌面小部件")).perform(androidx.test.espresso.action.ViewActions.scrollTo()).check(matches(isDisplayed()));
       onView(withText("添加到桌面")).perform(androidx.test.espresso.action.ViewActions.scrollTo(), androidx.test.espresso.action.ViewActions.click());
       onView(withText("预览桌面小部件")).check(matches(isDisplayed()));
     }

@@ -910,22 +910,7 @@ public final class FeaturesActivity extends Activity {
 
   private void showMore() {
     shell("更多设置");
-    body.addView(label("帮助", 19, INK));
-    primary(
-        "使用引导",
-        () -> {
-          guidePage = 0;
-          mode = "guide";
-          render();
-        });
-    gap();
     showAppearanceSettings();
-    body.addView(label("桌面小部件", 19, INK));
-    body.addView(label("4×4 尺寸，可查看取件码、逐件完成或一键取出全部。", 14, MUTED));
-    primary(
-        "添加到桌面",
-        this::showWidgetPreview);
-    gap();
     body.addView(label("放置天数提醒", 19, INK));
     body.addView(label("达到设定天数，在清单中突出显示。仅在应用内提醒。", 14, MUTED));
     NumberPicker days = new NumberPicker(this);
@@ -947,6 +932,18 @@ public final class FeaturesActivity extends Activity {
           store.setReminderDays(days.getValue());
           reminderDraft = days.getValue();
           Toast.makeText(this, "已设为 " + days.getValue() + " 天", Toast.LENGTH_SHORT).show();
+        });
+    gap();
+    body.addView(label("桌面小部件", 19, INK));
+    body.addView(label("4×4 尺寸，可查看取件码、逐件完成或一键取出全部。", 14, MUTED));
+    primary("添加到桌面", this::showWidgetPreview);
+    gap();
+    primary(
+        "使用引导",
+        () -> {
+          guidePage = 0;
+          mode = "guide";
+          render();
         });
   }
 
