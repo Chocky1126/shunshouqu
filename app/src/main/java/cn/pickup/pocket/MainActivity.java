@@ -235,7 +235,7 @@ public final class MainActivity extends Activity {
       });
       panel.addView(item,new LinearLayout.LayoutParams(-1,itemHeight));
     }
-    int popupWidth = Math.min(dp(204),getResources().getDisplayMetrics().widthPixels-dp(36));
+    int popupWidth = menuWidth(panel);
     int popupHeight = itemHeight*labels.length+dp(16);
     android.widget.PopupWindow popup = new android.widget.PopupWindow(panel,popupWidth,popupHeight,true);
     popup.setBackgroundDrawable(AppStyle.surface(this,AppStyle.PAPER,6,true));
@@ -250,15 +250,31 @@ public final class MainActivity extends Activity {
     popup.showAtLocation(anchor,Gravity.TOP|Gravity.LEFT,x,y);
   }
 
+  private int menuWidth(LinearLayout panel) {
+    int itemWidth = 0;
+    for (int i = 0; i < panel.getChildCount(); i++) {
+      TextView item = (TextView) panel.getChildAt(i);
+      int width = (int) Math.ceil(android.text.Layout.getDesiredWidth(item.getText(), item.getPaint()))
+          + item.getPaddingLeft() + item.getPaddingRight();
+      // Relative icons are not resolved into compound padding until the view is attached.
+      android.graphics.drawable.Drawable[] icons = item.getCompoundDrawablesRelative();
+      for (int side = 0; side <= 2; side += 2) {
+        if (icons[side] != null) width += icons[side].getBounds().width() + item.getCompoundDrawablePadding();
+      }
+      itemWidth = Math.max(itemWidth, width);
+    }
+    return Math.min(itemWidth + panel.getPaddingLeft() + panel.getPaddingRight(),
+        getResources().getDisplayMetrics().widthPixels - dp(36));
+  }
+
   private void showMenu(View anchor) {
     LinearLayout panel = column();
     panel.setPadding(dp(8),dp(8),dp(8),dp(8));
     ScrollView menuScroll = new ScrollView(this);
     menuScroll.setVerticalScrollBarEnabled(false);
     menuScroll.addView(panel);
-    int menuHeight = Math.min(dp(216), getResources().getDisplayMetrics().heightPixels - dp(80));
     android.widget.PopupWindow popup = new android.widget.PopupWindow(menuScroll,
-        Math.min(dp(238),getResources().getDisplayMetrics().widthPixels-dp(36)), menuHeight,true);
+        android.view.ViewGroup.LayoutParams.WRAP_CONTENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT,true);
     popup.setBackgroundDrawable(AppStyle.surface(this,AppStyle.PAPER,6,true));
     homePopup = popup;
     popup.setOutsideTouchable(true); popup.setElevation(dp(3));
@@ -279,6 +295,12 @@ public final class MainActivity extends Activity {
       });
       panel.addView(item,new LinearLayout.LayoutParams(-1,-2));
     }
+    int width = menuWidth(panel);
+    panel.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+    popup.setWidth(width);
+    popup.setHeight(Math.min(panel.getMeasuredHeight(),
+        getResources().getDisplayMetrics().heightPixels - dp(80)));
     popup.showAsDropDown(anchor,0,dp(6),Gravity.END);
   }
 
