@@ -35,7 +35,7 @@ final class GuideContent {
         R.drawable.pixel_locker,
         "多种方式都能录入",
         "支持单条、批量、分享、截图和近三天短信扫描。",
-        new String[] {"单条 / 批量\n长按首页录入按钮进入批量录入。", "分享 / 截图\n多图一次最多选择 10 张。"},
+        new String[] {"单条 / 批量\n点录入按钮添加一条，点上箭头选择批量录入。", "分享 / 截图\n多图一次最多选择 10 张。"},
         "短信扫描需授权；已有和已取的码会跳过，核对后才保存。"),
     new Page(
         R.drawable.pixel_gate,

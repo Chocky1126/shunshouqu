@@ -1,6 +1,7 @@
 <resources>
     <item name="home_menu" type="id" />
     <item name="add_code" type="id" />
+    <item name="add_code_options" type="id" />
     <item name="code_input" type="id" />
     <item name="input_status" type="id" />
     <item name="station_settings" type="id" />

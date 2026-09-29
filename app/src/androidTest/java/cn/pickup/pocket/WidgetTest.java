@@ -18,6 +18,8 @@ import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
@@ -118,6 +120,22 @@ public class WidgetTest {
     assertEquals(4, info.targetCellWidth);
     assertEquals(4, info.targetCellHeight);
     assertEquals(AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN, info.widgetCategory);
+    assertTrue("OEM picker needs a static preview fallback", info.previewImage != 0);
+    BitmapFactory.Options bounds = new BitmapFactory.Options();
+    bounds.inJustDecodeBounds = true;
+    BitmapFactory.decodeResource(context.getResources(), info.previewImage, bounds);
+    assertTrue("Static preview must show the full widget, not just its icon", bounds.outWidth >= 600 && bounds.outHeight >= 600);
+  }
+
+  @Test
+  public void modernPickerCanReadGeneratedPreview() {
+    if (Build.VERSION.SDK_INT < 35) return;
+    Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+    WidgetSupport.publishPreview(context);
+    RemoteViews preview = AppWidgetManager.getInstance(context).getWidgetPreview(
+        new ComponentName(context, PickupWidget.class), null,
+        AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN);
+    assertTrue("Modern widget picker should receive a generated preview", preview != null);
   }
 
   @Test

@@ -21,25 +21,7 @@ public class ColorOsRegressionTest {
   public void setup() {
     c = InstrumentationRegistry.getInstrumentation().getTargetContext();
     c.deleteDatabase("pickup.db");
-    ClipboardImport.prefs(c).edit().clear().commit();
-  }
-
-  @Test
-  public void manualClipboardReadCanBeRepeated() {
-    try (ActivityScenario<FeaturesActivity> a =
-        ActivityScenario.launch(new Intent(c, FeaturesActivity.class).putExtra("mode", "more"))) {
-      a.onActivity(
-          v -> {
-            v.getSystemService(ClipboardManager.class)
-                .setPrimaryClip(ClipboardFixtures.text("fixture", "2-1-003"));
-            try (ParcelStore s = new ParcelStore(v)) {
-              assertEquals("2-1-003", ClipboardImport.read(v, s).codes);
-              assertEquals("2-1-003", ClipboardImport.read(v, s).codes);
-            } finally {
-              v.getSystemService(ClipboardManager.class).clearPrimaryClip();
-            }
-          });
-    }
+    c.getSharedPreferences("device_features", Context.MODE_PRIVATE).edit().clear().commit();
   }
 
   @Test
@@ -48,31 +30,6 @@ public class ColorOsRegressionTest {
         ActivityScenario.launch(new Intent(c, FeaturesActivity.class).putExtra("mode", "more"))) {
       onView(withText("导出备份")).check(doesNotExist());
       onView(withText("导入备份")).check(doesNotExist());
-    }
-  }
-
-
-
-  @Test
-  public void manualPasteWorksDespiteOldAutomaticClipboardPreferences() {
-    try (ActivityScenario<FeaturesActivity> a =
-        ActivityScenario.launch(new Intent(c, FeaturesActivity.class).putExtra("mode", "more"))) {
-      a.onActivity(
-          v -> {
-            ClipboardManager manager = v.getSystemService(ClipboardManager.class);
-            manager.setPrimaryClip(ClipboardFixtures.text("fixture", "001234"));
-            try (ParcelStore store = new ParcelStore(v)) {
-              ClipboardImport.prefs(v).edit().putBoolean("clipboard_enabled", false).commit();
-              assertEquals("001234", ClipboardImport.read(v, store).codes);
-              manager.clearPrimaryClip();
-              ClipboardImport.Result empty = ClipboardImport.read(v, store);
-              assertNull(empty.codes);
-              assertTrue(empty.message.contains("读取受限"));
-            } finally {
-              manager.clearPrimaryClip();
-            }
-          });
-      onView(withText("更多设置")).perform(click());
     }
   }
 
@@ -93,15 +50,15 @@ public class ColorOsRegressionTest {
               intent,
               android.app.PendingIntent.FLAG_UPDATE_CURRENT
                   | android.app.PendingIntent.FLAG_IMMUTABLE);
-      ClipboardImport.prefs(c)
+      c.getSharedPreferences("device_features", Context.MODE_PRIVATE)
           .edit()
           .putBoolean("daily_enabled", true)
           .putLong("scheduled_at", 123)
           .putString("clipboard_seen", "old")
           .commit();
       LegacyCleanup.run(c);
-      assertFalse(ClipboardImport.prefs(c).contains("daily_enabled"));
-      assertFalse(ClipboardImport.prefs(c).contains("scheduled_at"));
+      assertFalse(c.getSharedPreferences("device_features", Context.MODE_PRIVATE).contains("daily_enabled"));
+      assertFalse(c.getSharedPreferences("device_features", Context.MODE_PRIVATE).contains("scheduled_at"));
       assertNull(
           android.app.PendingIntent.getBroadcast(
               c,

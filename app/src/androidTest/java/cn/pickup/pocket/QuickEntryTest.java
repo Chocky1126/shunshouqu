@@ -9,10 +9,16 @@ import androidx.test.core.app.ActivityScenario;
 import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Test;
 public class QuickEntryTest {
- @Test public void longPressEntryOpensBatchAndSingleTapStillOpensSingleEntry() {
+ @Test public void entryOptionsOpenAboveFooterAndSingleTapStillOpensSingleEntry() {
   try(ActivityScenario<MainActivity> a=ActivityScenario.launch(MainActivity.class)) {
-   onView(withId(R.id.add_code)).perform(longClick());
+   a.onActivity(activity -> assertFalse(activity.findViewById(R.id.add_code).isLongClickable()));
+   onView(withId(R.id.add_code_options)).perform(click());
+   onView(withText("批量录入")).check(matches(isDisplayed()));
+   onView(withText("截图识别")).check(matches(isDisplayed()));
+   onView(withText("扫描短信")).check(matches(isDisplayed()));
+   onView(withText("批量录入")).perform(click());
    onView(withId(R.id.batch_source)).check(matches(isDisplayed()));
+   onView(withText("读取剪贴板")).check(doesNotExist());
    onView(withContentDescription("返回取件清单")).perform(click());
    onView(withId(R.id.add_code)).perform(click());
    onView(withId(R.id.code_input)).check(matches(isDisplayed()));

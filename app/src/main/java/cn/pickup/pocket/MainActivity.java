@@ -3,7 +3,6 @@ package cn.pickup.pocket;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
-import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Color;
@@ -62,6 +61,7 @@ public final class MainActivity extends Activity {
   public void onCreate(Bundle state) {
     super.onCreate(state);
     LegacyCleanup.run(this);
+    WidgetSupport.publishPreview(this);
     store = new ParcelStore(this);
     buildScreen();
     render();
@@ -168,20 +168,6 @@ public final class MainActivity extends Activity {
     summary.addView(total);
     overviewNote = text(" 件待取",compact ? 12 : 15,MUTED,false);
     summary.addView(overviewNote, new LinearLayout.LayoutParams(0, -2, 1));
-    completeAll = button("一键取出", INK, AppStyle.TINT);
-    completeAll.setId(R.id.home_complete_all);
-    completeAll.setTextSize(13);
-    completeAll.setMinimumHeight(dp(36));
-    completeAll.setOnClickListener(v -> {
-      try {
-        int count = store.completeAll();
-        if (count > 0) Toast.makeText(this, "已取出 " + count + " 件，可在已取件中恢复", Toast.LENGTH_SHORT).show();
-        render();
-      } catch (RuntimeException error) {
-        showError("一键取出失败，待取清单未更改。", null);
-      }
-    });
-    summary.addView(completeAll);
     root.addView(summary);
     scroll = new ScrollView(this);
     scroll.setFillViewport(true);
@@ -197,17 +183,79 @@ public final class MainActivity extends Activity {
     TextView hint = text("左滑标记已取 · 长按编辑",12,MUTED,false);
     hint.setGravity(Gravity.CENTER); hint.setPadding(0,dp(6),0,dp(12));
     if (!compact) footer.addView(hint);
+    LinearLayout actions = row();
+    LinearLayout entry = row();
     Button add = button("录入取件码",Color.WHITE,compact ? BLUE : 0xFFD76824);
-    add.setId(R.id.add_code); add.setTextSize(compact ? 16 : 20);
-
+    add.setId(R.id.add_code); add.setTextSize(compact ? 14 : 16);
+    add.setPadding(dp(2), 0, dp(2), 0);
     add.setOnClickListener(v -> showAdd());
-    add.setOnLongClickListener(v -> { openFeature("batch", -1, -1); return true; });
-    add.setContentDescription("录入取件码，长按批量录入");
-    add.setTooltipText("长按批量录入");
+    add.setContentDescription("录入取件码");
     add.setMinimumHeight(dp(compact ? 50 : 60));
-    footer.addView(add,new LinearLayout.LayoutParams(-1,-2));
+    entry.addView(add,new LinearLayout.LayoutParams(0,-2,1));
+    Button options = button("▴", Color.WHITE, compact ? BLUE : 0xFFD76824);
+    options.setId(R.id.add_code_options);
+    options.setTextSize(22);
+    options.setPadding(0,0,0,0);
+    options.setContentDescription("展开更多录入方式");
+    options.setMinimumHeight(dp(compact ? 50 : 60));
+    options.setOnClickListener(v -> showEntryOptions(options));
+    LinearLayout.LayoutParams optionParams = new LinearLayout.LayoutParams(dp(42),-2);
+    optionParams.setMarginStart(dp(2));
+    entry.addView(options,optionParams);
+    actions.addView(entry,new LinearLayout.LayoutParams(0,-2,3));
+    completeAll = button("一键取出", INK, AppStyle.TINT);
+    completeAll.setId(R.id.home_complete_all);
+    completeAll.setTextSize(compact ? 13 : 15);
+    completeAll.setPadding(dp(2),0,dp(2),0);
+    completeAll.setMinimumHeight(dp(compact ? 50 : 60));
+    completeAll.setOnClickListener(v -> {
+      try {
+        int count = store.completeAll();
+        if (count > 0) Toast.makeText(this, "已取出 " + count + " 件，可在已取件中恢复", Toast.LENGTH_SHORT).show();
+        render();
+      } catch (RuntimeException error) {
+        showError("一键取出失败，待取清单未更改。", null);
+      }
+    });
+    LinearLayout.LayoutParams completeParams = new LinearLayout.LayoutParams(0,-2,2);
+    completeParams.setMarginStart(dp(8));
+    actions.addView(completeAll,completeParams);
+    footer.addView(actions,new LinearLayout.LayoutParams(-1,-2));
     root.addView(footer);
     AppStyle.enter(content);
+  }
+
+  private void showEntryOptions(View anchor) {
+    LinearLayout panel = column();
+    panel.setPadding(dp(8),dp(8),dp(8),dp(8));
+    String[] labels = {"批量录入", "截图识别", "扫描短信"};
+    String[] modes = {"batch", "ocr", "sms"};
+    int[] icons = {R.drawable.ic_content_paste,R.drawable.ic_image_search,R.drawable.ic_sms};
+    int itemHeight = dp(48);
+    for (int i=0;i<labels.length;i++) {
+      String mode = modes[i];
+      Button item = button(labels[i], INK, Color.TRANSPARENT);
+      item.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
+      AppStyle.icon(item,icons[i],INK,false);
+      item.setOnClickListener(v -> {
+        if (homePopup != null) homePopup.dismiss();
+        openFeature(mode,-1,-1);
+      });
+      panel.addView(item,new LinearLayout.LayoutParams(-1,itemHeight));
+    }
+    int popupWidth = Math.min(dp(204),getResources().getDisplayMetrics().widthPixels-dp(36));
+    int popupHeight = itemHeight*labels.length+dp(16);
+    android.widget.PopupWindow popup = new android.widget.PopupWindow(panel,popupWidth,popupHeight,true);
+    popup.setBackgroundDrawable(AppStyle.surface(this,AppStyle.PAPER,6,true));
+    popup.setOutsideTouchable(true);
+    popup.setElevation(dp(3));
+    homePopup = popup;
+    int[] location = new int[2];
+    anchor.getLocationOnScreen(location);
+    int x = Math.max(dp(8),Math.min(location[0]+anchor.getWidth()-popupWidth,
+        getResources().getDisplayMetrics().widthPixels-popupWidth-dp(8)));
+    int y = Math.max(dp(8),location[1]-popupHeight-dp(8));
+    popup.showAtLocation(anchor,Gravity.TOP|Gravity.LEFT,x,y);
   }
 
   private void showMenu(View anchor) {
@@ -216,27 +264,24 @@ public final class MainActivity extends Activity {
     ScrollView menuScroll = new ScrollView(this);
     menuScroll.setVerticalScrollBarEnabled(false);
     menuScroll.addView(panel);
-    int menuHeight = Math.min(dp(316), getResources().getDisplayMetrics().heightPixels - dp(80));
+    int menuHeight = Math.min(dp(166), getResources().getDisplayMetrics().heightPixels - dp(80));
     android.widget.PopupWindow popup = new android.widget.PopupWindow(menuScroll,
         Math.min(dp(238),getResources().getDisplayMetrics().widthPixels-dp(36)), menuHeight,true);
     popup.setBackgroundDrawable(AppStyle.surface(this,AppStyle.PAPER,6,true));
     homePopup = popup;
     popup.setOutsideTouchable(true); popup.setElevation(dp(3));
-    String[] labels = {"粘贴录入","截图识别","扫描近三天短信","已取件","站点设置","更多设置"};
-    int[] icons = {R.drawable.ic_content_paste,R.drawable.ic_image_search,R.drawable.ic_sms,R.drawable.ic_history,R.drawable.ic_settings,R.drawable.ic_tune};
+    String[] labels = {"已取件","站点设置","更多设置"};
+    int[] icons = {R.drawable.ic_history,R.drawable.ic_settings,R.drawable.ic_tune};
     for (int i=0;i<labels.length;i++) {
       final int action=i;
       Button item=button(labels[i],INK,Color.TRANSPARENT);
       item.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
       AppStyle.icon(item,icons[i],INK,false);
-      if (i==4) item.setId(R.id.station_settings);
+      if (i==1) item.setId(R.id.station_settings);
       item.setOnClickListener(v -> {
         popup.dismiss();
-        if (action==0) pasteFromClipboard();
-        else if (action==1) openFeature("ocr",-1,-1);
-        else if (action==2) openFeature("sms",-1,-1);
-        else if (action==3) openFeature("history",-1,-1);
-        else if (action==4) showSettings();
+        if (action==0) openFeature("history",-1,-1);
+        else if (action==1) showSettings();
         else openFeature("more",-1,-1);
       });
       panel.addView(item,new LinearLayout.LayoutParams(-1,-2));
@@ -251,7 +296,7 @@ public final class MainActivity extends Activity {
       total.setText(String.valueOf(parcels.size()));
       total.setContentDescription(parcels.size() + " 件待取快递");
       overviewNote.setText(" 件待取 · " + stations.size() + " 个站点");
-      completeAll.setVisibility(parcels.isEmpty() ? View.GONE : View.VISIBLE);
+      completeAll.setEnabled(!parcels.isEmpty());
       int previousY = scroll.getScrollY();
       groups.removeAllViews();
       for (int index = 0; index < stations.size(); index++) {
@@ -647,15 +692,6 @@ public final class MainActivity extends Activity {
   protected void onResume() {
     super.onResume();
     if (store != null && groups != null) render();
-  }
-
-  private void pasteFromClipboard() {
-    ClipboardImport.Result result = ClipboardImport.read(this, store);
-    startActivity(
-        new Intent(this, FeaturesActivity.class)
-            .putExtra("mode", "batch")
-            .putExtra("source", result.codes)
-            .putExtra("clipboardNote", result.message));
   }
 
   private void showStationEditor(

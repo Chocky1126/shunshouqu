@@ -6,7 +6,7 @@ import android.content.*;
 /** One-time retirement of v1.4 scheduled work; no receiver or new alarm is registered. */
 final class LegacyCleanup {
   static void run(Context c) {
-    SharedPreferences p = ClipboardImport.prefs(c);
+    SharedPreferences p = c.getSharedPreferences("device_features", Context.MODE_PRIVATE);
     if (!p.getBoolean("v1614_clipboard_cleanup", false)) {
       p.edit()
           .remove("clipboard_enabled")

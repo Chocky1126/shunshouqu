@@ -26,13 +26,15 @@ public class PixelNavigationTest {
     assertEquals(expected, scenario.getState());
   }
 
-  @Test public void menuKeepsAllExistingDestinationsAndClosesOnNavigation() {
+  @Test public void menuKeepsSettingsAndHistoryAndClosesOnNavigation() {
     Context c = InstrumentationRegistry.getInstrumentation().getTargetContext();
     c.deleteDatabase("pickup.db");
     try (ActivityScenario<MainActivity> a=ActivityScenario.launch(MainActivity.class)) {
       onView(withId(R.id.home_menu)).perform(click());
-      for (String title:new String[]{"粘贴录入","截图识别","已取件","站点设置","更多设置"})
+      for (String title:new String[]{"已取件","站点设置","更多设置"})
         onView(withText(title)).check(matches(isDisplayed()));
+      for (String title:new String[]{"粘贴录入","截图识别","扫描近三天短信"})
+        onView(withText(title)).check(doesNotExist());
       onView(withText("站点设置")).perform(click());
       onView(withText("完成")).perform(click());
       onView(withId(R.id.add_code)).check(matches(isDisplayed()));

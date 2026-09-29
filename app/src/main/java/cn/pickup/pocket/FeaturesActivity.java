@@ -261,35 +261,11 @@ public final class FeaturesActivity extends Activity {
   private void showBatch() {
     shell("批量录入");
     body.addView(label("粘贴多条短信或取件码，识别后核对再保存。", 14, MUTED));
-    String note = getIntent().getStringExtra("clipboardNote");
-    if (note != null && !note.isEmpty()) body.addView(label(note, 13, MUTED));
     sourceInput = input("粘贴短信全文，或每行一个取件码", true);
     sourceInput.setId(R.id.batch_source);
     sourceInput.setFilters(new InputFilter[] {new InputFilter.LengthFilter(100000)});
     sourceInput.setText(source);
     sourceInput.setEnabled(!busyImage && !busySms);
-    Button paste =
-        action(
-            "读取剪贴板",
-            () -> {
-              ClipboardImport.Result result = ClipboardImport.read(this, store);
-              if (result.codes == null) {
-                message(result.message);
-                return;
-              }
-              source = sourceInput.getText().toString();
-              if (source.length() + result.codes.length() + 1 > ImportPayload.MAX_TEXT) {
-                message("文字过长，请分批录入。");
-                return;
-              }
-              source += (source.isEmpty() ? "" : "\n") + result.codes;
-              unchecked.clear();
-              preview = true;
-              getIntent().removeExtra("clipboardNote");
-              hideKeyboard();
-              showBatch();
-            });
-    paste.setEnabled(!busyImage && !busySms);
     Button analyze =
         action(
             "识别取件码",
@@ -436,7 +412,7 @@ public final class FeaturesActivity extends Activity {
     busySms = false;
     if (error != null) {
       showBatch();
-      message("读取短信失败，可能受到系统或安装方式限制。仍可在短信应用中分享文字，或使用粘贴录入。");
+      message("读取短信失败，可能受到系统或安装方式限制。仍可在短信应用中分享文字，或在批量录入中粘贴。");
       return;
     }
     if (result.codes.isEmpty()) {
@@ -468,7 +444,7 @@ public final class FeaturesActivity extends Activity {
                 + (result.skipped > 0 ? "，跳过 " + result.skipped + " 个已有或已取" : ""),
             Toast.LENGTH_LONG)
         .show();
-    if (result.limited) message("最近三天短信较多，仅检查了最新 500 条。请核对结果，必要时使用分享或粘贴录入。");
+    if (result.limited) message("最近三天短信较多，仅检查了最新 500 条。请核对结果，必要时使用分享或在批量录入中粘贴。");
   }
 
   private void hideKeyboard() {
