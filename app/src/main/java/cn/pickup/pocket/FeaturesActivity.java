@@ -1,8 +1,10 @@
 package cn.pickup.pocket;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -27,10 +29,11 @@ public final class FeaturesActivity extends Activity {
       MUTED = AppStyle.MUTED,
       ACCENT = AppStyle.ACCENT;
   private static final int IMAGE = 20;
+  private static final int READ_SMS = 21;
   private ParcelStore store;
   private LinearLayout body;
   private String mode, source = "", imageUri;
-  private boolean preview, keepAwake, busyImage;
+  private boolean preview, keepAwake, busyImage, busySms;
   private ArrayList<String> imageQueue = new ArrayList<>();
   private int imageIndex, imageFailures, guidePage;
   private int stationId = -1, editStation = -1;
@@ -51,6 +54,8 @@ public final class FeaturesActivity extends Activity {
     store = new ParcelStore(this);
     mode = getIntent().getStringExtra("mode");
     if (mode == null) mode = "more";
+    boolean scanFromShortcut = state == null && "sms".equals(mode);
+    if ("sms".equals(mode)) mode = "batch";
     stationId = getIntent().getIntExtra("station", -1);
     parcelId = getIntent().getLongExtra("parcel", -1);
     editDraft = getIntent().getStringExtra("code");
@@ -86,6 +91,7 @@ public final class FeaturesActivity extends Activity {
     if (state == null && incomingImages != null && !incomingImages.isEmpty())
       startImages(incomingImages);
     else if (busyImage && !imageQueue.isEmpty()) recognizeNext();
+    if (scanFromShortcut) requestSmsScan();
   }
 
   private int dp(float n) {
@@ -261,7 +267,7 @@ public final class FeaturesActivity extends Activity {
     sourceInput.setId(R.id.batch_source);
     sourceInput.setFilters(new InputFilter[] {new InputFilter.LengthFilter(100000)});
     sourceInput.setText(source);
-    sourceInput.setEnabled(!busyImage);
+    sourceInput.setEnabled(!busyImage && !busySms);
     Button paste =
         action(
             "读取剪贴板",
@@ -283,7 +289,7 @@ public final class FeaturesActivity extends Activity {
               hideKeyboard();
               showBatch();
             });
-    paste.setEnabled(!busyImage);
+    paste.setEnabled(!busyImage && !busySms);
     Button analyze =
         action(
             "识别取件码",
@@ -295,12 +301,16 @@ public final class FeaturesActivity extends Activity {
               showBatch();
             });
     AppStyle.styleButton(analyze, Color.WHITE, ACCENT);
-    analyze.setEnabled(!busyImage);
+    analyze.setEnabled(!busyImage && !busySms);
+    Button sms =
+        action(busySms ? "正在扫描近三天短信…" : "扫描近三天短信", this::requestSmsScan);
+    sms.setEnabled(!busyImage && !busySms);
+    body.addView(label("只读取最近 72 小时的短信收件箱；提取后仍需核对保存。", 12, MUTED));
     Button image =
         action(
             busyImage ? "正在识别第 " + (imageIndex + 1) + " / " + imageQueue.size() + " 张…" : "选择截图识别",
             this::chooseImage);
-    image.setEnabled(!busyImage);
+    image.setEnabled(!busyImage && !busySms);
     body.addView(label("支持一次选择最多 10 张，合并识别后核对保存。", 12, MUTED));
     if (imageFailures > 0)
       body.addView(label(imageFailures + " 张图片未能读取，其余结果已保留，可重新选择失败图片。", 13, ACCENT));
@@ -308,6 +318,10 @@ public final class FeaturesActivity extends Activity {
       ProgressBar progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
       progress.setIndeterminate(true);
       body.addView(progress, new LinearLayout.LayoutParams(-1, dp(4)));
+    }
+    if (busySms) {
+      body.addView(label("正在本机扫描短信，请稍候…", 14, MUTED));
+      return;
     }
     body.addView(label("只提取符合站点格式的完整数字片段。识别可能有误，请核对；未匹配的码可在单条录入中手动选择站点。", 12, MUTED));
     if (!preview) return;
@@ -375,6 +389,82 @@ public final class FeaturesActivity extends Activity {
             message("保存失败，可能有取件码已录入或站点格式已变化。此批次未保存，请重新识别。");
           }
         });
+  }
+
+  private void requestSmsScan() {
+    if (busyImage || busySms) return;
+    if (checkSelfPermission(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) {
+      startSmsScan();
+      return;
+    }
+    if (dialog != null) dialog.dismiss();
+    dialog =
+        new AlertDialog.Builder(this)
+            .setTitle("扫描近三天短信")
+            .setMessage(
+                "Android 会请求短信读取权限。顺手取只在你点击扫描后查询最近 72 小时的收件箱，提取取件码供你核对；不会保存或上传短信全文。")
+            .setNegativeButton("取消", null)
+            .setPositiveButton(
+                "继续", (d, which) -> requestPermissions(new String[] {Manifest.permission.READ_SMS}, READ_SMS))
+            .create();
+    dialog.show();
+    AppStyle.dialog(dialog);
+  }
+
+  private void startSmsScan() {
+    if (busySms) return;
+    if (sourceInput != null) source = sourceInput.getText().toString();
+    busySms = true;
+    showBatch();
+    List<Station> scanStations = store.stations();
+    new Thread(
+            () -> {
+              try {
+                SmsInboxReader.Result result =
+                    SmsInboxReader.scan(getApplicationContext(), scanStations, System.currentTimeMillis());
+                runOnUiThread(() -> finishSmsScan(result, null));
+              } catch (RuntimeException error) {
+                runOnUiThread(() -> finishSmsScan(null, error));
+              }
+            },
+            "sms-import")
+        .start();
+  }
+
+  private void finishSmsScan(SmsInboxReader.Result result, RuntimeException error) {
+    if (isFinishing() || isDestroyed() || !"batch".equals(mode)) return;
+    busySms = false;
+    if (error != null) {
+      showBatch();
+      message("读取短信失败，可能受到系统或安装方式限制。仍可在短信应用中分享文字，或使用粘贴录入。");
+      return;
+    }
+    if (result.codes.isEmpty()) {
+      showBatch();
+      message(
+          "最近三天检查了 "
+              + result.checked
+              + " 条短信，未找到匹配站点格式的取件码。"
+              + (result.limited ? "仅检查了最新 500 条。" : "")
+              + "可尝试分享或粘贴短信文字。");
+      return;
+    }
+    String found = String.join("\n", result.codes);
+    if (source.length() + found.length() + 1 > ImportPayload.MAX_TEXT) {
+      showBatch();
+      message("识别文字过长，请先清空批量录入内容后重试。");
+      return;
+    }
+    source += (source.isEmpty() ? "" : "\n") + found;
+    unchecked.clear();
+    preview = true;
+    showBatch();
+    Toast.makeText(
+            this,
+            "已检查 " + result.checked + " 条短信，找到 " + result.codes.size() + " 个候选取件码",
+            Toast.LENGTH_LONG)
+        .show();
+    if (result.limited) message("最近三天短信较多，仅检查了最新 500 条。请核对结果，必要时使用分享或粘贴录入。");
   }
 
   private void hideKeyboard() {
@@ -959,6 +1049,16 @@ public final class FeaturesActivity extends Activity {
       }
       return;
     }
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int request, String[] permissions, int[] grantResults) {
+    super.onRequestPermissionsResult(request, permissions, grantResults);
+    if (request != READ_SMS) return;
+    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+      startSmsScan();
+    else
+      message("未获得短信读取权限。可继续使用分享、粘贴或截图录入；若系统不允许授权，请检查安装方式和权限设置。");
   }
 
   @Override

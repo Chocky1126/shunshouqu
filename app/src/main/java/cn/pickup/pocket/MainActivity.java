@@ -198,25 +198,30 @@ public final class MainActivity extends Activity {
   private void showMenu(View anchor) {
     LinearLayout panel = column();
     panel.setPadding(dp(8),dp(8),dp(8),dp(8));
-    android.widget.PopupWindow popup = new android.widget.PopupWindow(panel,
-        Math.min(dp(238),getResources().getDisplayMetrics().widthPixels-dp(36)), -2,true);
+    ScrollView menuScroll = new ScrollView(this);
+    menuScroll.setVerticalScrollBarEnabled(false);
+    menuScroll.addView(panel);
+    int menuHeight = Math.min(dp(316), getResources().getDisplayMetrics().heightPixels - dp(80));
+    android.widget.PopupWindow popup = new android.widget.PopupWindow(menuScroll,
+        Math.min(dp(238),getResources().getDisplayMetrics().widthPixels-dp(36)), menuHeight,true);
     popup.setBackgroundDrawable(AppStyle.surface(this,AppStyle.PAPER,6,true));
     homePopup = popup;
     popup.setOutsideTouchable(true); popup.setElevation(dp(3));
-    String[] labels = {"粘贴录入","截图识别","已取件","站点设置","更多设置"};
-    int[] icons = {R.drawable.ic_content_paste,R.drawable.ic_image_search,R.drawable.ic_history,R.drawable.ic_settings,R.drawable.ic_tune};
+    String[] labels = {"粘贴录入","截图识别","扫描近三天短信","已取件","站点设置","更多设置"};
+    int[] icons = {R.drawable.ic_content_paste,R.drawable.ic_image_search,R.drawable.ic_sms,R.drawable.ic_history,R.drawable.ic_settings,R.drawable.ic_tune};
     for (int i=0;i<labels.length;i++) {
       final int action=i;
       Button item=button(labels[i],INK,Color.TRANSPARENT);
       item.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
       AppStyle.icon(item,icons[i],INK,false);
-      if (i==3) item.setId(R.id.station_settings);
+      if (i==4) item.setId(R.id.station_settings);
       item.setOnClickListener(v -> {
         popup.dismiss();
         if (action==0) pasteFromClipboard();
         else if (action==1) openFeature("ocr",-1,-1);
-        else if (action==2) openFeature("history",-1,-1);
-        else if (action==3) showSettings();
+        else if (action==2) openFeature("sms",-1,-1);
+        else if (action==3) openFeature("history",-1,-1);
+        else if (action==4) showSettings();
         else openFeature("more",-1,-1);
       });
       panel.addView(item,new LinearLayout.LayoutParams(-1,-2));
