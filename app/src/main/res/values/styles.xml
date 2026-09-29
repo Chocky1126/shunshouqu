@@ -1,12 +1,25 @@
 <resources>
     <style name="AppBaseTheme" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
-        <item name="android:colorAccent">#B34B16</item>
+        <item name="android:colorAccent">@color/palette_accent</item>
+        <item name="android:textColorPrimary">@color/palette_ink</item>
+        <item name="android:textColorSecondary">@color/palette_muted</item>
+        <item name="android:colorControlNormal">@color/palette_muted</item>
+        <item name="android:colorControlActivated">@color/palette_accent</item>
+        <item name="android:colorButtonNormal">@color/palette_paper</item>
+        <item name="android:colorBackground">@color/palette_background</item>
+        <item name="android:alertDialogTheme">@style/AppDialogTheme</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:navigationBarColor">#33291E</item>
-        <item name="android:statusBarColor">#FFF6DA</item>
+        <item name="android:statusBarColor">@color/palette_background</item>
         <item name="android:windowActionModeOverlay">true</item>
-        <item name="android:windowBackground">#FFF6DA</item>
+        <item name="android:windowBackground">@color/palette_background</item>
+    </style>
+    <style name="AppDialogTheme" parent="android:style/Theme.Material.Light.Dialog.Alert">
+        <item name="android:colorAccent">@color/palette_accent</item>
+        <item name="android:textColorPrimary">@color/palette_ink</item>
+        <item name="android:textColorSecondary">@color/palette_muted</item>
+        <item name="android:colorBackground">@color/palette_paper</item>
     </style>
     <style name="AppTheme" parent="AppBaseTheme" />
 </resources>

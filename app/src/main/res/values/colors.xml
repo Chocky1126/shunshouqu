@@ -1,0 +1,11 @@
+<resources>
+    <color name="palette_background">#FFF6DA</color>
+    <color name="palette_paper">#FFFCF1</color>
+    <color name="palette_tint">#FFEDB9</color>
+    <color name="palette_ink">#33291E</color>
+    <color name="palette_muted">#76664F</color>
+    <color name="palette_primary">#D76824</color>
+    <color name="palette_accent">#B34B16</color>
+    <color name="palette_line">#E5D8B9</color>
+    <color name="palette_soft_border">#6B5136</color>
+</resources>

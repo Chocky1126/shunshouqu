@@ -16,12 +16,16 @@ import android.graphics.drawable.StateListDrawable;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 /** Shared visual language for the offline native screens; no data or navigation state. */
 final class AppStyle {
   static final int BG = 0xFFFFF6DA, INK = 0xFF33291E, MUTED = 0xFF76664F;
-  static final int ACCENT = 0xFFB34B16, LINE = 0xFFE5D8B9, TINT = 0xFFFFEDB9;
+  static final int PRIMARY = 0xFFD76824, ACCENT = 0xFFB34B16;
+  static final int LINE = 0xFFE5D8B9, TINT = 0xFFFFEDB9;
 
   private AppStyle() {}
 
@@ -77,7 +81,7 @@ final class AppStyle {
 
   static RippleDrawable ripple(Context c, int color, int radius) {
     return new RippleDrawable(
-        ColorStateList.valueOf(color == INK || color == ACCENT ? 0x30FFFFFF : 0x1833291E),
+        ColorStateList.valueOf(color == INK || color == ACCENT || color == PRIMARY ? 0x30FFFFFF : 0x1833291E),
         surface(c, color, radius, color != Color.TRANSPARENT),
         surface(c, Color.WHITE, radius, false));
   }
@@ -141,6 +145,44 @@ final class AppStyle {
     v.setBackground(backgrounds);
     v.setPadding(dp(c, 16), dp(c, 16), dp(c, 16), dp(c, 16));
     v.setHighlightColor(TINT);
+    v.setTextColor(INK);
+    v.setHintTextColor(MUTED);
+  }
+
+  static Spinner spinner(Context c, String[] options) {
+    Spinner spinner = new Spinner(c, Spinner.MODE_DROPDOWN);
+    ArrayAdapter<String> adapter = new ArrayAdapter<String>(c, android.R.layout.simple_spinner_item, options) {
+      private View style(View view, boolean dropdown) {
+        TextView text = (TextView) view;
+        text.setTextColor(INK);
+        text.setTextSize(16);
+        text.setSingleLine(true);
+        text.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        text.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        text.setMinHeight(dp(c,50));
+        text.setPadding(dp(c,14),dp(c,10),dp(c,14),dp(c,10));
+        if (!dropdown) {
+          Drawable arrow = c.getDrawable(R.drawable.ic_chevron).mutate();
+          arrow.setTint(INK);
+          arrow.setBounds(0,0,dp(c,20),dp(c,20));
+          text.setCompoundDrawablesRelative(null,null,arrow,null);
+          text.setCompoundDrawablePadding(dp(c,8));
+        }
+        return text;
+      }
+      @Override public View getView(int position, View convertView, ViewGroup parent) {
+        return style(super.getView(position,convertView,parent),false);
+      }
+      @Override public View getDropDownView(int position, View convertView, ViewGroup parent) {
+        return style(super.getDropDownView(position,convertView,parent),true);
+      }
+    };
+    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    spinner.setAdapter(adapter);
+    spinner.setMinimumHeight(dp(c,50));
+    spinner.setBackground(surface(c,PAPER,6,true));
+    spinner.setPopupBackgroundDrawable(surface(c,PAPER,6,true));
+    return spinner;
   }
 
   static void enter(View v) {
@@ -158,6 +200,8 @@ final class AppStyle {
   static void dialog(AlertDialog dialog) {
     if (dialog.getWindow() == null) return;
     dialog.getWindow().setBackgroundDrawable(surface(dialog.getContext(), PAPER, 6, true));
+    TextView message = dialog.findViewById(android.R.id.message);
+    if (message != null) message.setTextColor(INK);
     for (int which :
         new int[] {
           AlertDialog.BUTTON_POSITIVE, AlertDialog.BUTTON_NEGATIVE, AlertDialog.BUTTON_NEUTRAL

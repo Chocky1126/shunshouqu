@@ -96,12 +96,12 @@ public class OnboardingTest {
   }
 
   @Test
-  public void newInstallNeedsGuideVersionTwo() {
+  public void newInstallNeedsCurrentGuide() {
     assertTrue(Onboarding.shouldShow(context));
   }
 
   @Test
-  public void legacyCompletedGuideStillNeedsVersionTwoOnce() {
+  public void legacyCompletedGuideStillNeedsNewGuideOnce() {
     context
         .getSharedPreferences(Onboarding.PREFS, Context.MODE_PRIVATE)
         .edit()
@@ -111,7 +111,7 @@ public class OnboardingTest {
     Onboarding.complete(context);
     assertFalse(Onboarding.shouldShow(context));
     assertEquals(
-        2,
+        Onboarding.VERSION,
         context
             .getSharedPreferences(Onboarding.PREFS, Context.MODE_PRIVATE)
             .getInt("seen_version", 0));
@@ -148,6 +148,7 @@ public class OnboardingTest {
         .putBoolean("initialized", true)
         .putBoolean("eligible", false)
         .putBoolean("completed", true)
+        .putInt("seen_version", 2)
         .commit();
 
     try (ActivityScenario<MainActivity> ignored = ActivityScenario.launch(MainActivity.class)) {
@@ -162,7 +163,7 @@ public class OnboardingTest {
   }
 
   @Test
-  public void seenVersionTwoStartsOnHome() {
+  public void currentGuideStartsOnHome() {
     Onboarding.complete(context);
     try (ActivityScenario<MainActivity> ignored = ActivityScenario.launch(MainActivity.class)) {
       onView(withId(R.id.add_code)).check(matches(isDisplayed()));

@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -104,13 +103,6 @@ public final class FeaturesActivity extends Activity {
     return l;
   }
 
-  private GradientDrawable shape(int color) {
-    GradientDrawable d = new GradientDrawable();
-    d.setColor(color);
-    d.setCornerRadius(dp(3));
-    return d;
-  }
-
   private TextView label(String s, int size, int color) {
     TextView t = new TextView(this);
     t.setText(s);
@@ -138,7 +130,7 @@ public final class FeaturesActivity extends Activity {
 
   private Button primary(String text, Runnable run) {
     Button b = action(text, run);
-    AppStyle.styleButton(b, Color.WHITE, ACCENT);
+    AppStyle.styleButton(b, Color.WHITE, AppStyle.PRIMARY);
     return b;
   }
 
@@ -276,7 +268,7 @@ public final class FeaturesActivity extends Activity {
               hideKeyboard();
               showBatch();
             });
-    AppStyle.styleButton(analyze, Color.WHITE, ACCENT);
+    AppStyle.styleButton(analyze, Color.WHITE, AppStyle.PRIMARY);
     analyze.setEnabled(!busyImage && !busySms);
     Button sms =
         action(busySms ? "正在扫描近三天短信…" : "扫描近三天短信", this::requestSmsScan);
@@ -584,7 +576,7 @@ public final class FeaturesActivity extends Activity {
         label(
             ParcelAge.label(item.createdAt),
             15,
-            ParcelAge.days(item.createdAt) >= store.reminderDays() ? 0xFFC24B19 : MUTED));
+            ParcelAge.days(item.createdAt) >= store.reminderDays() ? ACCENT : MUTED));
     CheckBox awake = new CheckBox(this);
     awake.setText("取件时保持屏幕常亮");
     awake.setTextColor(MUTED);
@@ -627,17 +619,13 @@ public final class FeaturesActivity extends Activity {
   }
 
   private Spinner stationPicker(List<Station> stations, int selected) {
-    Spinner spinner = new Spinner(this);
     List<String> names = new ArrayList<>();
     int index = 0;
     for (int n = 0; n < stations.size(); n++) {
       names.add(stations.get(n).name);
       if (stations.get(n).id == selected) index = n;
     }
-    ArrayAdapter<String> adapter =
-        new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, names);
-    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-    spinner.setAdapter(adapter);
+    Spinner spinner = AppStyle.spinner(this,names.toArray(new String[0]));
     spinner.setSelection(index);
     spinner.setMinimumHeight(dp(52));
     return spinner;
@@ -784,12 +772,8 @@ public final class FeaturesActivity extends Activity {
 
   private Spinner appearancePicker(String title, String[] options, int selected) {
     body.addView(label(title, 15, INK));
-    Spinner picker = new Spinner(this);
+    Spinner picker = AppStyle.spinner(this,options);
     picker.setContentDescription(title);
-    ArrayAdapter<String> adapter =
-        new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, options);
-    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-    picker.setAdapter(adapter);
     picker.setSelection(selected);
     picker.setMinimumHeight(dp(48));
     body.addView(picker, new LinearLayout.LayoutParams(-1, -2));
@@ -893,7 +877,7 @@ public final class FeaturesActivity extends Activity {
     navigation.addView(previous, new LinearLayout.LayoutParams(0, -2, 1));
     Button next =
         AppStyle.button(
-            this, guidePage == GuideContent.COUNT - 1 ? "开始使用" : "下一步", Color.WHITE, ACCENT);
+            this, guidePage == GuideContent.COUNT - 1 ? "开始使用" : "下一步", Color.WHITE, AppStyle.PRIMARY);
     next.setOnClickListener(
         v -> {
           if (guidePage == GuideContent.COUNT - 1) finishGuide();
@@ -963,13 +947,6 @@ public final class FeaturesActivity extends Activity {
           store.setReminderDays(days.getValue());
           reminderDraft = days.getValue();
           Toast.makeText(this, "已设为 " + days.getValue() + " 天", Toast.LENGTH_SHORT).show();
-        });
-    action(
-        "手动指定站点录入",
-        () -> {
-          mode = "edit";
-          parcelId = -1;
-          render();
         });
   }
 

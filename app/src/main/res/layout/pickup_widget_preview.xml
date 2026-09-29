@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="250dp"
+    android:layout_height="250dp"
     android:orientation="vertical"
     android:padding="12dp"
     android:background="@drawable/widget_background">
@@ -23,14 +23,14 @@
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:text="@string/widget_name"
-            android:textColor="#33291E"
+            android:textColor="@color/palette_ink"
             android:textSize="18sp"
             android:textStyle="bold" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/widget_preview_total"
-            android:textColor="#7A6A57"
+            android:textColor="@color/palette_muted"
             android:textSize="13sp" />
     </LinearLayout>
 
@@ -66,7 +66,7 @@
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:text="@string/widget_open_app"
-            android:textColor="#B34B16"
+            android:textColor="@color/palette_accent"
             android:textSize="12sp"
             android:textStyle="bold" />
         <TextView
@@ -76,7 +76,7 @@
             android:gravity="center"
             android:background="@drawable/widget_action_background"
             android:text="@string/widget_complete_all"
-            android:textColor="#33291E"
+            android:textColor="@color/palette_ink"
             android:textSize="12sp"
             android:textStyle="bold" />
     </LinearLayout>

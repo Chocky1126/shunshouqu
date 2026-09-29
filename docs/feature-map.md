@@ -1,59 +1,22 @@
-# 顺手取功能地图
+# 顺手取 v1.7.0 功能地图
 
-本文梳理 v1.6.11 的全部用户功能。
+| 功能 | 用户入口 | 实现入口 |
+| --- | --- | --- |
+| 单条自动归站录入 | 首页录入按钮 | MainActivity、CodeRules、ParcelStore |
+| 手动指定站点录入 | 右上角 → 手动录入 | FeaturesActivity |
+| 批量文本、截图、短信 | 录入按钮旁上箭头 | FeaturesActivity、BatchParser、ScreenshotRecognizer、SmsInboxReader、SmsCodeExtractor |
+| 其他应用文字/图片分享 | 分享目标顺手取 | ShareActivity、ImportPayload |
+| 站点增删、格式、图标、路线排序 | 右上角 → 站点设置 | MainActivity、StationIcons、ParcelStore |
+| 分组、分段数字排序、前导零 | 首页清单 | CodeRules、ParcelStore |
+| 单件取件、长按编辑 | 左滑/方框、长按取件码 | MainActivity、SwipeCard、FeaturesActivity |
+| 全部取件 | 首页/小部件一键取出 | MainActivity、PickupWidget、ParcelStore |
+| 大字取件、逐条完成/跳过、常亮 | 站点标题 | FeaturesActivity |
+| 七天历史、恢复、清空 | 右上角 → 已取件 | FeaturesActivity、ParcelStore |
+| 字号、行距、放置天数 | 右上角 → 更多设置 | FeaturesActivity、CodeAppearance、ParcelAge |
+| 小部件及系统添加预览 | 更多设置 → 添加到桌面 | PickupWidget、WidgetSupport |
+| 首次/升级五页引导、再次查看 | 首次启动/更多设置 | Onboarding、GuideContent、FeaturesActivity |
+| 暖色配色及像素样式 | 所有应用页面 | AppStyle、colors.xml、styles.xml |
 
-## 站点
+小部件从顶部显示最多 6 条，缩小时减少显示行，取件后自动补位。短信扫描由用户点击并授权触发，只读近 72 小时、最多 500 条收件箱；过滤待取及最近 7 天已取码，核对保存前不会写入。
 
-- 新增、编辑和删除站点。主要入口：`MainActivity`、`ParcelStore`。
-- 设置站点名称、取件码格式和 8 种像素图标。主要入口：`MainActivity`、`StationIcons`。
-- 一个 `x` 表示一位数字，多种格式每行一种。主要入口：`CodeRules`、`MainActivity`。
-- 长按拖动或上下移动站点，设置实际取件路线。主要入口：`MainActivity`、`ParcelStore`。
-- 有待取件的站点不能删除。主要入口：`MainActivity`、`ParcelStore`。
-
-## 录入
-
-- 首页按钮单击录入一条，长按进入批量录入。主要入口：`MainActivity`、`FeaturesActivity`。
-- 格式无法自动匹配时手动选择站点。主要入口：`MainActivity`、`FeaturesActivity`。
-- 接收其他应用分享的文字或图片。主要入口：`ShareActivity`、`ImportPayload`。
-- 粘贴短信或多条号码，识别后统一核对。主要入口：`FeaturesActivity`、`BatchParser`。
-- 打开主页时检查剪贴板，也可手动读取；只提示，不自动保存。主要入口：`ClipboardImport`、`MainActivity`。
-- 一次选择最多 10 张图片，在本机识别文字。主要入口：`FeaturesActivity`、`ScreenshotRecognizer`、`ImportPayload`。
-- 重复待取码会标记并跳过，修改原文后需重新识别。主要入口：`FeaturesActivity`、`ParcelStore`。
-
-## 首页与排序
-
-- 取件码按站点分组，站点按用户设定顺序显示。主要入口：`MainActivity`、`ParcelStore`。
-- 同一站点内按每段数字升序排列并保留前导零。主要入口：`CodeRules`、`ParcelStore`。
-- 空站点默认折叠，可手动展开。主要入口：`MainActivity`。
-- 长按取件码可修改号码和所属站点。主要入口：`MainActivity`、`FeaturesActivity`。
-- 点右侧方框或向左滑动可标记已取。主要入口：`MainActivity`、`SwipeCard`。
-- 显示录入时间或放置天数，超过阈值后突出显示。主要入口：`MainActivity`、`ParcelAge`。
-
-## 取件与历史
-
-- 点击有待取件的站点进入大字取件模式。主要入口：`MainActivity`、`FeaturesActivity`。
-- 支持逐条标记已取、跳过和保持屏幕常亮。主要入口：`FeaturesActivity`。
-- 已取件记录保留 7 天，可恢复到待取清单。主要入口：`FeaturesActivity`、`ParcelStore`。
-- 原站点已删除时可恢复到其他现有站点。主要入口：`FeaturesActivity`、`ParcelStore`。
-- 可清空全部已取件历史；清空不可恢复，不影响待取清单。主要入口：`FeaturesActivity`、`ParcelStore`。
-
-## 桌面小部件
-
-- 4×4 标准 Android 小部件从顶部显示最多 6 个待取件码；缩小时减少可见行并提示剩余件数。每行依次显示取件码、站点和已取方框，顺序与首页一致。主要入口：`PickupWidget`。
-- 可在桌面直接完成取件，记录进入 7 天历史；应用内数据变化后自动刷新。主要入口：`PickupWidget`、`ParcelStore`。
-- 可从更多设置请求添加，不支持自动添加时显示普通 Android 小部件的手动步骤。主要入口：`FeaturesActivity`、`WidgetSupport`。
-
-## 显示、帮助与数据
-
-- 首页取件码字号提供小、标准、大、特大四档。主要入口：`FeaturesActivity`、`CodeAppearance`。
-- 行距提供紧凑、标准、宽松三档。主要入口：`FeaturesActivity`、`CodeAppearance`。
-- 放置天数阈值为 1–30 天，只在应用内显示，不发送通知。主要入口：`FeaturesActivity`、`ParcelStore`。
-- 五页新版引导自动显示一次，并可从更多设置再次查看。主要入口：`MainActivity`、`FeaturesActivity`、`Onboarding`、`GuideContent`。
-- 数据只保存在本机 SQLite，没有账号或云同步。主要入口：`ParcelStore`。
-- 不申请短信、网络、相机或全盘存储权限；图片通过系统文件选择器读取。主要入口：`AndroidManifest.xml`、`FeaturesActivity`。
-
-## 明确不包含
-
-- 本地备份、每日通知和后台定时任务。
-- OPPO 平台专有“全部卡片”；本版提供标准 Android 桌面小部件。
-- 账号、云同步、短信读取、相机权限和网络上传。
+数据库为 SQLite v5。数据仅在本机保存，没有账号、云同步、备份、定时通知、剪贴板自动识别、剪贴板主动读取或后台扫描。应用不申请网络、相机或全盘存储权限。

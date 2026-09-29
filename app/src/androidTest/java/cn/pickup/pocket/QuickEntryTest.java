@@ -29,6 +29,21 @@ public class QuickEntryTest {
   try(ActivityScenario<FeaturesActivity> a=ActivityScenario.launch(new Intent(c,FeaturesActivity.class).putExtra("mode","more"))) {
    onView(withText("打开应用时识别剪贴板")).check(doesNotExist());
    onView(withText("剪贴板自动识别")).check(doesNotExist());
+   onView(withText("手动指定站点录入")).check(doesNotExist());
+   onView(withText("手动录入")).check(doesNotExist());
   }
+ }
+ @Test public void manualEntryLivesInHomeMenuAndAcceptsAnUnmatchedCode() {
+  Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();
+  c.deleteDatabase("pickup.db");
+  Onboarding.complete(c);
+  try(ActivityScenario<MainActivity> a=ActivityScenario.launch(MainActivity.class)) {
+   onView(withId(R.id.home_menu)).perform(click());
+   onView(withText("手动录入")).perform(click());
+   onView(withId(R.id.edit_code)).perform(replaceText("123"),closeSoftKeyboard());
+   onView(withText("保存取件码")).perform(scrollTo(),click());
+   onView(withText("123")).check(matches(isDisplayed()));
+   try(ParcelStore store=new ParcelStore(c)) { assertEquals("123",store.all().get(0).code); }
+  } finally { c.deleteDatabase("pickup.db"); }
  }
 }

@@ -24,7 +24,7 @@
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:text="@string/widget_name"
-            android:textColor="#33291E"
+            android:textColor="@color/palette_ink"
             android:textSize="18sp"
             android:textStyle="bold" />
         <TextView
@@ -32,7 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/widget_total_empty"
-            android:textColor="#7A6A57"
+            android:textColor="@color/palette_muted"
             android:textSize="13sp" />
     </LinearLayout>
 
@@ -43,7 +43,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="@string/widget_empty"
-        android:textColor="#7A6A57"
+        android:textColor="@color/palette_muted"
         android:textSize="18sp" />
 
     <LinearLayout android:id="@+id/widget_row_1" style="@style/WidgetPickupRow">
@@ -99,7 +99,7 @@
             android:maxLines="1"
             android:ellipsize="end"
             android:text="@string/widget_open_app"
-            android:textColor="#B34B16"
+            android:textColor="@color/palette_accent"
             android:textSize="12sp"
             android:textStyle="bold" />
         <TextView
@@ -109,7 +109,7 @@
             android:gravity="center"
             android:background="@drawable/widget_action_background"
             android:text="@string/widget_complete_all"
-            android:textColor="#33291E"
+            android:textColor="@color/palette_ink"
             android:textSize="12sp"
             android:textStyle="bold"
             android:contentDescription="取出全部待取件码" />

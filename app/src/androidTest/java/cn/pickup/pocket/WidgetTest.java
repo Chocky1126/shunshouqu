@@ -20,6 +20,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
@@ -136,6 +137,34 @@ public class WidgetTest {
         new ComponentName(context, PickupWidget.class), null,
         AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN);
     assertTrue("Modern widget picker should receive a generated preview", preview != null);
+  }
+
+  @Test
+  public void pinRequestCarriesASizedPreviewAcrossProcessBoundary() {
+    Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+    android.os.Parcel parcel = android.os.Parcel.obtain();
+    Bundle extras;
+    try {
+      WidgetSupport.pinExtras(context).writeToParcel(parcel,0);
+      parcel.setDataPosition(0);
+      extras = Bundle.CREATOR.createFromParcel(parcel);
+      extras.setClassLoader(RemoteViews.class.getClassLoader());
+    } finally { parcel.recycle(); }
+    RemoteViews preview = extras.getParcelable(AppWidgetManager.EXTRA_APPWIDGET_PREVIEW);
+    assertTrue("Pin dialog must receive the preview explicitly",preview != null);
+    InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+      android.widget.FrameLayout host = new android.widget.FrameLayout(context);
+      View view = preview.apply(context,host);
+      host.addView(view);
+      host.measure(View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED),
+          View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
+      host.layout(0,0,host.getMeasuredWidth(),host.getMeasuredHeight());
+      int size = Math.round(250*context.getResources().getDisplayMetrics().density);
+      assertEquals(size,view.getWidth());
+      assertEquals(size,view.getHeight());
+      android.widget.ImageView image = (android.widget.ImageView)((android.view.ViewGroup)view).getChildAt(0);
+      assertTrue("Pin preview must include the whole card image",image.getDrawable() != null);
+    });
   }
 
   @Test

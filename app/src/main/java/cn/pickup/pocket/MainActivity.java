@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -83,13 +82,6 @@ public final class MainActivity extends Activity {
 
   private int dp(float v) {
     return Math.round(v * getResources().getDisplayMetrics().density);
-  }
-
-  private GradientDrawable shape(int color, int radius) {
-    GradientDrawable d = new GradientDrawable();
-    d.setColor(color);
-    d.setCornerRadius(dp(radius));
-    return d;
   }
 
   private LinearLayout column() {
@@ -185,14 +177,14 @@ public final class MainActivity extends Activity {
     if (!compact) footer.addView(hint);
     LinearLayout actions = row();
     LinearLayout entry = row();
-    Button add = button("录入取件码",Color.WHITE,compact ? BLUE : 0xFFD76824);
+    Button add = button("录入取件码",Color.WHITE,AppStyle.PRIMARY);
     add.setId(R.id.add_code); add.setTextSize(compact ? 14 : 16);
     add.setPadding(dp(2), 0, dp(2), 0);
     add.setOnClickListener(v -> showAdd());
     add.setContentDescription("录入取件码");
     add.setMinimumHeight(dp(compact ? 50 : 60));
     entry.addView(add,new LinearLayout.LayoutParams(0,-2,1));
-    Button options = button("▴", Color.WHITE, compact ? BLUE : 0xFFD76824);
+    Button options = button("▴", Color.WHITE, AppStyle.PRIMARY);
     options.setId(R.id.add_code_options);
     options.setTextSize(22);
     options.setPadding(0,0,0,0);
@@ -264,24 +256,25 @@ public final class MainActivity extends Activity {
     ScrollView menuScroll = new ScrollView(this);
     menuScroll.setVerticalScrollBarEnabled(false);
     menuScroll.addView(panel);
-    int menuHeight = Math.min(dp(166), getResources().getDisplayMetrics().heightPixels - dp(80));
+    int menuHeight = Math.min(dp(216), getResources().getDisplayMetrics().heightPixels - dp(80));
     android.widget.PopupWindow popup = new android.widget.PopupWindow(menuScroll,
         Math.min(dp(238),getResources().getDisplayMetrics().widthPixels-dp(36)), menuHeight,true);
     popup.setBackgroundDrawable(AppStyle.surface(this,AppStyle.PAPER,6,true));
     homePopup = popup;
     popup.setOutsideTouchable(true); popup.setElevation(dp(3));
-    String[] labels = {"已取件","站点设置","更多设置"};
-    int[] icons = {R.drawable.ic_history,R.drawable.ic_settings,R.drawable.ic_tune};
+    String[] labels = {"手动录入","已取件","站点设置","更多设置"};
+    int[] icons = {R.drawable.ic_add,R.drawable.ic_history,R.drawable.ic_settings,R.drawable.ic_tune};
     for (int i=0;i<labels.length;i++) {
       final int action=i;
       Button item=button(labels[i],INK,Color.TRANSPARENT);
       item.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
       AppStyle.icon(item,icons[i],INK,false);
-      if (i==1) item.setId(R.id.station_settings);
+      if (i==2) item.setId(R.id.station_settings);
       item.setOnClickListener(v -> {
         popup.dismiss();
-        if (action==0) openFeature("history",-1,-1);
-        else if (action==1) showSettings();
+        if (action==0) openFeature("edit",-1,-1);
+        else if (action==1) openFeature("history",-1,-1);
+        else if (action==2) showSettings();
         else openFeature("more",-1,-1);
       });
       panel.addView(item,new LinearLayout.LayoutParams(-1,-2));
@@ -368,7 +361,7 @@ public final class MainActivity extends Activity {
     if (items.isEmpty()) {
       TextView empty = text("这里还没有待取件", 13, MUTED, false);
       empty.setPadding(dp(14), dp(18), dp(14), dp(18));
-      empty.setBackground(shape(0x88FFFFFF, 13));
+      empty.setBackground(AppStyle.surface(this,AppStyle.PAPER,13,false));
       block.addView(empty);
     } else
       for (int i = 0; i < items.size(); i++) {
@@ -428,7 +421,6 @@ public final class MainActivity extends Activity {
     edit.setHintTextColor(MUTED);
     edit.setHint(hint);
     edit.setPadding(dp(14), dp(14), dp(14), dp(14));
-    edit.setBackground(shape(0xFFF2F5FA, 12));
     AppStyle.input(edit);
     return edit;
   }
@@ -567,7 +559,7 @@ public final class MainActivity extends Activity {
       space(body, 12);
       LinearLayout card = row();
       card.setPadding(dp(12), dp(12), dp(8), dp(12));
-      card.setBackground(shape(TINTS[Math.floorMod(station.id, TINTS.length)], 14));
+      card.setBackground(AppStyle.surface(this,AppStyle.TINT,14,false));
       int iconIndex = StationIcons.indexOf(station.iconKey);
       android.widget.ImageView icon = new android.widget.ImageView(this);
       icon.setImageResource(StationIcons.RESOURCES[iconIndex]);
@@ -926,7 +918,9 @@ public final class MainActivity extends Activity {
             .setMessage(message)
             .setNegativeButton("关闭", null);
     if (retry != null) b.setPositiveButton("重试", (d, w) -> retry.run());
-    b.show();
+    AlertDialog error = b.create();
+    error.show();
+    AppStyle.dialog(error);
   }
 
   @Override

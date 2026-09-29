@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 /** Tracks the one-time guide without changing parcel data or the database schema. */
 final class Onboarding {
   static final String PREFS = "onboarding";
-  static final int VERSION = 2;
+  static final int VERSION = 3;
   private static final String SEEN_VERSION = "seen_version";
 
   private Onboarding() {}
