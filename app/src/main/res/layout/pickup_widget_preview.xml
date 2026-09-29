@@ -55,12 +55,29 @@
         android:layout_weight="1"
         android:orientation="vertical" />
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="30dp"
-        android:gravity="center"
-        android:text="@string/widget_open_app"
-        android:textColor="#B34B16"
-        android:textSize="12sp"
-        android:textStyle="bold" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:text="@string/widget_open_app"
+            android:textColor="#B34B16"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/widget_preview_complete_all"
+            android:layout_width="78dp"
+            android:layout_height="30dp"
+            android:gravity="center"
+            android:background="@drawable/widget_action_background"
+            android:text="@string/widget_complete_all"
+            android:textColor="#33291E"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 </LinearLayout>

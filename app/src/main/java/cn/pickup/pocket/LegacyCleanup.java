@@ -7,6 +7,13 @@ import android.content.*;
 final class LegacyCleanup {
   static void run(Context c) {
     SharedPreferences p = ClipboardImport.prefs(c);
+    if (!p.getBoolean("v1614_clipboard_cleanup", false)) {
+      p.edit()
+          .remove("clipboard_enabled")
+          .remove("clipboard_dismissed")
+          .putBoolean("v1614_clipboard_cleanup", true)
+          .apply();
+    }
     if (p.getBoolean("v150_cleanup", false)) return;
     Intent old =
         new Intent("cn.pickup.pocket.DAILY_REMINDER")

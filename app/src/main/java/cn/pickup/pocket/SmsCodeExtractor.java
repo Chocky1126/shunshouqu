@@ -3,6 +3,7 @@ package cn.pickup.pocket;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 final class SmsCodeExtractor {
   private static final long THREE_DAYS = 3L * 24 * 60 * 60 * 1000;
@@ -20,6 +21,12 @@ final class SmsCodeExtractor {
       if (codes.size() > 200) throw new IllegalArgumentException("短信中识别到太多取件码，请改用分批录入");
     }
     return new ArrayList<>(codes);
+  }
+
+  static List<String> withoutKnown(List<String> candidates, Set<String> known) {
+    ArrayList<String> fresh = new ArrayList<>();
+    for (String code : candidates) if (!known.contains(code)) fresh.add(code);
+    return fresh;
   }
 
   static boolean withinLastThreeDays(long timestamp, long now) {

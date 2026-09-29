@@ -29,7 +29,6 @@ public class PixelNavigationTest {
   @Test public void menuKeepsAllExistingDestinationsAndClosesOnNavigation() {
     Context c = InstrumentationRegistry.getInstrumentation().getTargetContext();
     c.deleteDatabase("pickup.db");
-    ClipboardImport.prefs(c).edit().putBoolean("clipboard_enabled",false).commit();
     try (ActivityScenario<MainActivity> a=ActivityScenario.launch(MainActivity.class)) {
       onView(withId(R.id.home_menu)).perform(click());
       for (String title:new String[]{"粘贴录入","截图识别","已取件","站点设置","更多设置"})

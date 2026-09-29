@@ -23,6 +23,7 @@ import java.util.Map;
 /** Four-cell-square home-screen access to the pending pickup list. */
 public final class PickupWidget extends AppWidgetProvider {
   static final String ACTION_COMPLETE = "cn.pickup.pocket.action.WIDGET_COMPLETE";
+  static final String ACTION_COMPLETE_ALL = "cn.pickup.pocket.action.WIDGET_COMPLETE_ALL";
   static final String ACTION_DATA_CHANGED = "cn.pickup.pocket.action.WIDGET_DATA_CHANGED";
   static final String EXTRA_PARCEL_ID = "parcel_id";
   private static final int LIMIT = 6;
@@ -87,6 +88,17 @@ public final class PickupWidget extends AppWidgetProvider {
       refresh(context);
       return;
     }
+    if (ACTION_COMPLETE_ALL.equals(intent.getAction())) {
+      try (ParcelStore store = new ParcelStore(context)) {
+        int count = store.completeAll();
+        if (count > 0) Toast.makeText(context, "已取出 " + count + " 件，可在已取件中恢复", Toast.LENGTH_SHORT).show();
+      } catch (RuntimeException error) {
+        android.util.Log.e("PickupWidget", "Complete all failed", error);
+        Toast.makeText(context, "一键取出失败，请在应用中重试", Toast.LENGTH_SHORT).show();
+      }
+      refresh(context);
+      return;
+    }
     super.onReceive(context, intent);
   }
 
@@ -105,6 +117,8 @@ public final class PickupWidget extends AppWidgetProvider {
     views.setOnClickPendingIntent(R.id.widget_header, openApp);
     views.setOnClickPendingIntent(R.id.widget_empty, openApp);
     views.setOnClickPendingIntent(R.id.widget_footer, openApp);
+    views.setOnClickPendingIntent(R.id.widget_complete_all, completeAll(context));
+    views.setViewVisibility(R.id.widget_complete_all, all.isEmpty() ? View.GONE : View.VISIBLE);
     views.setViewVisibility(R.id.widget_empty, all.isEmpty() ? View.VISIBLE : View.GONE);
     views.setViewVisibility(R.id.widget_filler, all.isEmpty() ? View.GONE : View.VISIBLE);
 
@@ -183,6 +197,15 @@ public final class PickupWidget extends AppWidgetProvider {
             .setAction(ACTION_COMPLETE)
             .setData(Uri.parse("pickup://widget/complete/" + parcelId))
             .putExtra(EXTRA_PARCEL_ID, parcelId);
+    return PendingIntent.getBroadcast(
+        context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+  }
+
+  private static PendingIntent completeAll(Context context) {
+    Intent intent =
+        new Intent(context, PickupWidget.class)
+            .setAction(ACTION_COMPLETE_ALL)
+            .setData(Uri.parse("pickup://widget/complete-all"));
     return PendingIntent.getBroadcast(
         context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
   }

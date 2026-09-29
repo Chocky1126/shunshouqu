@@ -77,7 +77,8 @@ public class WidgetTest {
       assertEquals(View.VISIBLE, shortWidget.findViewById(R.id.widget_row_3).getVisibility());
       assertEquals(View.GONE, shortWidget.findViewById(R.id.widget_row_4).getVisibility());
       assertEquals("另有 4 件，打开应用查看", text(shortWidget, R.id.widget_footer));
-      assertTrue(shortWidget.findViewById(R.id.widget_row_3).getBottom() <= shortWidget.findViewById(R.id.widget_footer).getTop());
+      View footerRow = (View) shortWidget.findViewById(R.id.widget_footer).getParent();
+      assertTrue(shortWidget.findViewById(R.id.widget_row_3).getBottom() <= footerRow.getTop());
 
       View fullWidget = render(context, (RemoteViews) sizedViews.invoke(null, context, store, 340), 300, 340);
       assertEquals(View.VISIBLE, fullWidget.findViewById(R.id.widget_row_6).getVisibility());
@@ -95,6 +96,7 @@ public class WidgetTest {
     InstrumentationRegistry.getInstrumentation().runOnMainSync(
         () -> rendered.set(preview.apply(context, new android.widget.FrameLayout(context))));
     assertEquals("顺手取", text(rendered.get(), R.id.widget_preview_title));
+    assertEquals("一键取出", text(rendered.get(), R.id.widget_preview_complete_all));
   }
 
   @Test
@@ -126,6 +128,8 @@ public class WidgetTest {
             new Intent(context, FeaturesActivity.class).putExtra("mode", "more"))) {
       onView(withText("桌面小部件")).check(matches(isDisplayed()));
       onView(withText("添加到桌面")).check(matches(isDisplayed()));
+      onView(withText("添加到桌面")).perform(androidx.test.espresso.action.ViewActions.scrollTo(), androidx.test.espresso.action.ViewActions.click());
+      onView(withText("预览桌面小部件")).check(matches(isDisplayed()));
     }
   }
 

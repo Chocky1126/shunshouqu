@@ -26,6 +26,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,8 +43,9 @@ public final class MainActivity extends Activity {
   private static final int[] COLORS = {BLUE, BLUE, BLUE};
   private static final int[] TINTS = {AppStyle.TINT, AppStyle.TINT, AppStyle.TINT};
   private ParcelStore store;
-  private LinearLayout groups, clipboardArea;
+  private LinearLayout groups;
   private TextView total, overviewNote;
+  private Button completeAll;
   private ScrollView scroll;
   private List<Station> stations;
   private AlertDialog activeDialog;
@@ -165,7 +167,21 @@ public final class MainActivity extends Activity {
     total.setId(R.id.total_count);
     summary.addView(total);
     overviewNote = text(" 件待取",compact ? 12 : 15,MUTED,false);
-    summary.addView(overviewNote);
+    summary.addView(overviewNote, new LinearLayout.LayoutParams(0, -2, 1));
+    completeAll = button("一键取出", INK, AppStyle.TINT);
+    completeAll.setId(R.id.home_complete_all);
+    completeAll.setTextSize(13);
+    completeAll.setMinimumHeight(dp(36));
+    completeAll.setOnClickListener(v -> {
+      try {
+        int count = store.completeAll();
+        if (count > 0) Toast.makeText(this, "已取出 " + count + " 件，可在已取件中恢复", Toast.LENGTH_SHORT).show();
+        render();
+      } catch (RuntimeException error) {
+        showError("一键取出失败，待取清单未更改。", null);
+      }
+    });
+    summary.addView(completeAll);
     root.addView(summary);
     scroll = new ScrollView(this);
     scroll.setFillViewport(true);
@@ -175,7 +191,6 @@ public final class MainActivity extends Activity {
     content.setPadding(dp(26), dp(8), dp(26), dp(8));
     scroll.addView(content);
     root.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
-    clipboardArea = column(); content.addView(clipboardArea);
     groups = column(); content.addView(groups);
     LinearLayout footer = column();
     footer.setPadding(dp(26),dp(compact ? 0 : 4),dp(26),dp(compact ? 4 : 12));
@@ -236,6 +251,7 @@ public final class MainActivity extends Activity {
       total.setText(String.valueOf(parcels.size()));
       total.setContentDescription(parcels.size() + " 件待取快递");
       overviewNote.setText(" 件待取 · " + stations.size() + " 个站点");
+      completeAll.setVisibility(parcels.isEmpty() ? View.GONE : View.VISIBLE);
       int previousY = scroll.getScrollY();
       groups.removeAllViews();
       for (int index = 0; index < stations.size(); index++) {
@@ -631,81 +647,15 @@ public final class MainActivity extends Activity {
   protected void onResume() {
     super.onResume();
     if (store != null && groups != null) render();
-    if (clipboardArea != null && !ClipboardImport.enabled(this)) clipboardArea.removeAllViews();
-    android.content.ClipboardManager clipboard =
-        getSystemService(android.content.ClipboardManager.class);
-    clipboard.removePrimaryClipChangedListener(clipboardListener);
-    clipboard.addPrimaryClipChangedListener(clipboardListener);
-    queueClipboardCheck();
-  }
-
-  private final android.content.ClipboardManager.OnPrimaryClipChangedListener clipboardListener =
-      this::queueClipboardCheck;
-  private final Runnable clipboardCheck = this::checkClipboard;
-
-  private void queueClipboardCheck() {
-    handler.removeCallbacks(clipboardCheck);
-    handler.postDelayed(clipboardCheck, 350);
-  }
-
-  @Override
-  protected void onPause() {
-    getSystemService(android.content.ClipboardManager.class)
-        .removePrimaryClipChangedListener(clipboardListener);
-    handler.removeCallbacks(clipboardCheck);
-    super.onPause();
-  }
-
-  @Override
-  public void onWindowFocusChanged(boolean focused) {
-    super.onWindowFocusChanged(focused);
-    if (focused) queueClipboardCheck();
-    else handler.removeCallbacks(clipboardCheck);
   }
 
   private void pasteFromClipboard() {
-    ClipboardImport.Result result = ClipboardImport.read(this, store, true);
+    ClipboardImport.Result result = ClipboardImport.read(this, store);
     startActivity(
         new Intent(this, FeaturesActivity.class)
             .putExtra("mode", "batch")
             .putExtra("source", result.codes)
             .putExtra("clipboardNote", result.message));
-  }
-
-  private void checkClipboard() {
-    if (isFinishing()
-        || isDestroyed()
-        || !hasWindowFocus()
-        || activeDialog != null
-        || clipboardArea == null) return;
-    String codes = ClipboardImport.inspect(this, store);
-    clipboardArea.removeAllViews();
-    if (codes == null) return;
-    space(clipboardArea, 12);
-    LinearLayout card = column();
-    card.setPadding(dp(14), dp(12), dp(14), dp(12));
-    card.setBackground(shape(AppStyle.TINT, 18));
-    card.addView(text("剪贴板中发现 " + codes.split("\n").length + " 个新取件码", 14, INK, true));
-    LinearLayout actions = row();
-    Button review = button("核对录入", Color.WHITE, BLUE), ignore = button("忽略", MUTED, AppStyle.TINT);
-    review.setOnClickListener(
-        v -> {
-          clipboardArea.removeAllViews();
-          startActivity(
-              new Intent(this, FeaturesActivity.class)
-                  .putExtra("mode", "batch")
-                  .putExtra("source", codes));
-        });
-    ignore.setOnClickListener(
-        v -> {
-          ClipboardImport.dismiss(this, codes);
-          clipboardArea.removeAllViews();
-        });
-    actions.addView(review, new LinearLayout.LayoutParams(0, -2, 1));
-    actions.addView(ignore);
-    space(card, 8);
-    card.addView(actions);
-    clipboardArea.addView(card);
   }
 
   private void showStationEditor(

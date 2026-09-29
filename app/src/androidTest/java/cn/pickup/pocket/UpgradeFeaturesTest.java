@@ -103,7 +103,7 @@ public class UpgradeFeaturesTest {
   }
 
   @Test
-  public void clipboardFiltersExistingAndDoesNotRepeat() {
+  public void manualClipboardReadFiltersPendingAndCanBeRepeated() {
     try (ParcelStore s = new ParcelStore(c)) {
       s.add("001234");
     }
@@ -115,16 +115,13 @@ public class UpgradeFeaturesTest {
             v.getSystemService(ClipboardManager.class)
                 .setPrimaryClip(ClipboardFixtures.text("fixture", "001234 2-1-003"));
             try (ParcelStore s = new ParcelStore(v)) {
-              assertEquals("2-1-003", ClipboardImport.inspect(v, s));
-              assertEquals("2-1-003", ClipboardImport.inspect(v, s));
-              ClipboardImport.dismiss(v, "2-1-003");
-              assertNull(ClipboardImport.inspect(v, s));
+              assertEquals("2-1-003", ClipboardImport.read(v, s).codes);
+              assertEquals("2-1-003", ClipboardImport.read(v, s).codes);
             }
-            ClipboardImport.prefs(v).edit().putBoolean("clipboard_enabled", false).commit();
             v.getSystemService(ClipboardManager.class)
                 .setPrimaryClip(ClipboardFixtures.text("fixture", "1-2-0034"));
             try (ParcelStore s = new ParcelStore(v)) {
-              assertNull(ClipboardImport.inspect(v, s));
+              assertEquals("1-2-0034", ClipboardImport.read(v, s).codes);
             }
             v.getSystemService(ClipboardManager.class).clearPrimaryClip();
           });
@@ -147,7 +144,7 @@ public class UpgradeFeaturesTest {
             clip.getDescription().setExtras(extras);
             v.getSystemService(ClipboardManager.class).setPrimaryClip(clip);
             try (ParcelStore s = new ParcelStore(v)) {
-              assertNull(ClipboardImport.inspect(v, s));
+              assertNull(ClipboardImport.read(v, s).codes);
             }
             v.getSystemService(ClipboardManager.class).clearPrimaryClip();
           });

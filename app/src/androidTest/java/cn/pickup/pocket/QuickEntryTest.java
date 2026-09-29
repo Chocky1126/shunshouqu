@@ -18,16 +18,11 @@ public class QuickEntryTest {
    onView(withId(R.id.code_input)).check(matches(isDisplayed()));
   }
  }
- @Test public void clipboardToggleLivesInMoreAndSurvivesRecreation() {
+ @Test public void moreSettingsNoLongerOffersAutomaticClipboardReading() {
   Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();
-  ClipboardImport.prefs(c).edit().putBoolean("clipboard_enabled",true).commit();
   try(ActivityScenario<FeaturesActivity> a=ActivityScenario.launch(new Intent(c,FeaturesActivity.class).putExtra("mode","more"))) {
-   onView(withText("打开应用时识别剪贴板")).perform(scrollTo(),click());
-   assertFalse(ClipboardImport.enabled(c));a.recreate();
-   onView(withText("打开应用时识别剪贴板")).check(matches(isNotChecked()));
-   onView(withText("剪贴板读取帮助")).perform(scrollTo(),click());
-   onView(withText("ColorOS 剪贴板读取")).check(matches(isDisplayed()));
-   onView(withText("知道了")).perform(click());
-  } finally {ClipboardImport.prefs(c).edit().putBoolean("clipboard_enabled",true).commit();}
+   onView(withText("打开应用时识别剪贴板")).check(doesNotExist());
+   onView(withText("剪贴板自动识别")).check(doesNotExist());
+  }
  }
 }

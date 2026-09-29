@@ -118,6 +118,20 @@ public class ParcelStoreTest {
         assertThrows(IllegalArgumentException.class, () -> store.delete(Long.MAX_VALUE));
     }
 
+    @Test public void completeAllArchivesEveryPendingParcelExactlyOnce() {
+        Parcel first = store.add("001234");
+        Parcel second = store.add("2-1-003");
+        assertEquals(2, store.completeAll());
+        assertTrue(store.all().isEmpty());
+        assertEquals(2, store.history().size());
+        assertEquals(0, store.completeAll());
+        assertEquals(2, store.history().size());
+        HistoryEntry latest = store.history().get(0);
+        assertTrue(latest.parcelId == first.id || latest.parcelId == second.id);
+        store.restoreHistory(latest.id, latest.stationId);
+        assertEquals(1, store.all().size());
+    }
+
     @Test public void restoreNeverReplacesReaddedCodeAndRejectsDeletedStation() {
         Parcel deleted = store.add("001234");
         store.delete(deleted.id);

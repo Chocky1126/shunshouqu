@@ -272,7 +272,7 @@ public final class FeaturesActivity extends Activity {
         action(
             "读取剪贴板",
             () -> {
-              ClipboardImport.Result result = ClipboardImport.read(this, store, true);
+              ClipboardImport.Result result = ClipboardImport.read(this, store);
               if (result.codes == null) {
                 message(result.message);
                 return;
@@ -444,7 +444,10 @@ public final class FeaturesActivity extends Activity {
       message(
           "最近三天检查了 "
               + result.checked
-              + " 条短信，未找到匹配站点格式的取件码。"
+              + " 条短信，"
+              + (result.skipped > 0
+                  ? "识别到的 " + result.skipped + " 个取件码都已在待取或已取件中。"
+                  : "未找到匹配站点格式的取件码。")
               + (result.limited ? "仅检查了最新 500 条。" : "")
               + "可尝试分享或粘贴短信文字。");
       return;
@@ -461,7 +464,8 @@ public final class FeaturesActivity extends Activity {
     showBatch();
     Toast.makeText(
             this,
-            "已检查 " + result.checked + " 条短信，找到 " + result.codes.size() + " 个候选取件码",
+            "已检查 " + result.checked + " 条短信，找到 " + result.codes.size() + " 个新取件码"
+                + (result.skipped > 0 ? "，跳过 " + result.skipped + " 个已有或已取" : ""),
             Toast.LENGTH_LONG)
         .show();
     if (result.limited) message("最近三天短信较多，仅检查了最新 500 条。请核对结果，必要时使用分享或粘贴录入。");
@@ -802,27 +806,6 @@ public final class FeaturesActivity extends Activity {
         });
   }
 
-  private void showClipboardHelp() {
-    dialog =
-        new AlertDialog.Builder(this)
-            .setTitle("ColorOS 剪贴板读取")
-            .setMessage(
-                "若自动识别没有出现，请使用主页菜单的“粘贴录入”，或长按录入框选择系统“粘贴”。\n\n"
-                    + "也可在系统设置中搜索“剪贴板”，检查顺手取的读取权限。应用不能替你开启系统权限。\n\n"
-                    + "点击忽略后，同一组取件码不再提示；系统标记的敏感内容会跳过。")
-            .setPositiveButton(
-                "应用设置",
-                (d, w) ->
-                    startActivity(
-                        new Intent(
-                            android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            android.net.Uri.parse("package:" + getPackageName()))))
-            .setNegativeButton("知道了", null)
-            .create();
-    dialog.show();
-    AppStyle.dialog(dialog);
-  }
-
   private Spinner appearancePicker(String title, String[] options, int selected) {
     body.addView(label(title, 15, INK));
     Spinner picker = new Spinner(this);
@@ -977,34 +960,11 @@ public final class FeaturesActivity extends Activity {
         });
     gap();
     showAppearanceSettings();
-    body.addView(label("剪贴板自动识别", 19, INK));
-    Switch clipboard = new Switch(this);
-    clipboard.setText("打开应用时识别剪贴板");
-    clipboard.setTextColor(INK);
-    clipboard.setMinHeight(dp(52));
-    clipboard.setChecked(ClipboardImport.enabled(this));
-    clipboard.setOnCheckedChangeListener(
-        (button, checked) ->
-            ClipboardImport.prefs(this).edit().putBoolean("clipboard_enabled", checked).apply());
-    body.addView(clipboard);
-    body.addView(label("仅主页显示时读取，发现新取件码后提示核对，不会自动保存。", 14, MUTED));
-    action("剪贴板读取帮助", this::showClipboardHelp);
-    gap();
     body.addView(label("桌面小部件", 19, INK));
-    body.addView(label("4×4 尺寸，可直接查看取件码并标记完成。", 14, MUTED));
+    body.addView(label("4×4 尺寸，可查看取件码、逐件完成或一键取出全部。", 14, MUTED));
     action(
         "添加到桌面",
-        () -> {
-          if (WidgetSupport.requestPin(this)) {
-            Toast.makeText(this, "已向桌面发送添加请求", Toast.LENGTH_SHORT).show();
-          } else {
-            new AlertDialog.Builder(this)
-                .setTitle("添加桌面小部件")
-                .setMessage(WidgetSupport.manualInstructions())
-                .setPositiveButton("知道了", null)
-                .show();
-          }
-        });
+        this::showWidgetPreview);
     gap();
     body.addView(label("放置天数提醒", 19, INK));
     body.addView(label("达到设定天数，在清单中突出显示。仅在应用内提醒。", 14, MUTED));
@@ -1035,6 +995,37 @@ public final class FeaturesActivity extends Activity {
           parcelId = -1;
           render();
         });
+  }
+
+  private void showWidgetPreview() {
+    FrameLayout frame = new FrameLayout(this);
+    frame.setPadding(dp(12), dp(8), dp(12), dp(8));
+    View preview = getLayoutInflater().inflate(R.layout.pickup_widget_preview, frame, false);
+    FrameLayout.LayoutParams previewParams =
+        new FrameLayout.LayoutParams(dp(250), dp(250), Gravity.CENTER);
+    frame.addView(preview, previewParams);
+    dialog = new AlertDialog.Builder(this)
+        .setTitle("预览桌面小部件")
+        .setView(frame)
+        .setNegativeButton("取消", null)
+        .setPositiveButton("添加到桌面", (d, w) -> pinWidget())
+        .create();
+    dialog.show();
+    AppStyle.dialog(dialog);
+  }
+
+  private void pinWidget() {
+    if (WidgetSupport.requestPin(this)) {
+      Toast.makeText(this, "已向桌面发送添加请求", Toast.LENGTH_SHORT).show();
+      return;
+    }
+    dialog = new AlertDialog.Builder(this)
+        .setTitle("添加桌面小部件")
+        .setMessage(WidgetSupport.manualInstructions())
+        .setPositiveButton("知道了", null)
+        .create();
+    dialog.show();
+    AppStyle.dialog(dialog);
   }
 
   @Override

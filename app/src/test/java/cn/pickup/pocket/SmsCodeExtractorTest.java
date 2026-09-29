@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.HashSet;
 import org.junit.Test;
 
 public class SmsCodeExtractorTest {
@@ -12,6 +13,19 @@ public class SmsCodeExtractorTest {
           new Station(0, "楼下驿站", "x-x-xxxx"),
           new Station(1, "小区东门", "x-x-xxx\nxx-x-xxx"),
           new Station(2, "快递柜", "xxxxxx"));
+
+  @Test
+  public void scanOmitsPendingAndRecentlyCollectedCodes() {
+    List<String> candidates = Arrays.asList("2-1-003", "001234", "1-2-0034");
+    assertEquals(
+        Arrays.asList("1-2-0034"),
+        SmsCodeExtractor.withoutKnown(
+            candidates, new HashSet<>(Arrays.asList("2-1-003", "001234"))));
+    assertTrue(
+        SmsCodeExtractor.withoutKnown(
+                Arrays.asList("001234"), new HashSet<>(Arrays.asList("001234")))
+            .isEmpty());
+  }
 
   @Test
   public void extractsParcelMessagesButNotLoginCodes() {

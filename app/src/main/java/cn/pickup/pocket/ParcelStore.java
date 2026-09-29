@@ -411,6 +411,26 @@ public final class ParcelStore extends SQLiteOpenHelper {
     notifyWidget();
   }
 
+  public int completeAll() {
+    SQLiteDatabase db = getWritableDatabase();
+    int count;
+    db.beginTransaction();
+    try {
+      long collectedAt = System.currentTimeMillis();
+      db.execSQL(
+          "INSERT INTO history(parcel_id,code,station_id,station_name,created_at,collected_at)"
+              + " SELECT p.id,p.code,p.station_id,s.name,p.created_at,?"
+              + " FROM parcels p JOIN stations s ON s.id=p.station_id",
+          new Object[] {collectedAt});
+      count = db.delete("parcels", null, null);
+      db.setTransactionSuccessful();
+    } finally {
+      db.endTransaction();
+    }
+    if (count > 0) notifyWidget();
+    return count;
+  }
+
   public void restore(Parcel p) {
     if (p == null
         || p.id <= 0

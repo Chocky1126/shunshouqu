@@ -1,8 +1,6 @@
 package cn.pickup.pocket;
 
 import android.content.*;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.*;
 
 final class ClipboardImport {
@@ -19,16 +17,7 @@ final class ClipboardImport {
     return c.getSharedPreferences("device_features", Context.MODE_PRIVATE);
   }
 
-  static boolean enabled(Context c) {
-    return prefs(c).getBoolean("clipboard_enabled", true);
-  }
-
-  static String inspect(Context c, ParcelStore store) {
-    return read(c, store, false).codes;
-  }
-
-  static Result read(Context c, ParcelStore store, boolean explicit) {
-    if (!explicit && !enabled(c)) return new Result(null, "自动识别已关闭");
+  static Result read(Context c, ParcelStore store) {
     try {
       // Read once while focused. Some OEM permission gates do not expose metadata beforehand.
       ClipData clip = c.getSystemService(ClipboardManager.class).getPrimaryClip();
@@ -55,8 +44,6 @@ final class ClipboardImport {
       found.removeIf(existing::contains);
       if (found.isEmpty()) return new Result(null, "剪贴板中的取件码已在待取列表中。");
       String codes = String.join("\n", found);
-      if (!explicit && fingerprint(codes).equals(prefs(c).getString("clipboard_dismissed", "")))
-        return new Result(null, "已忽略这组取件码");
       return new Result(codes, "");
     } catch (IllegalArgumentException e) {
       return new Result(null, e.getMessage());
@@ -69,19 +56,4 @@ final class ClipboardImport {
     return new Result(null, "剪贴板为空或读取受限。可长按输入框选择粘贴；ColorOS 用户可在系统设置中搜索“剪贴板”，检查顺手取的读取权限。");
   }
 
-  static void dismiss(Context c, String codes) {
-    prefs(c).edit().putString("clipboard_dismissed", fingerprint(codes)).apply();
-  }
-
-  private static String fingerprint(String text) {
-    try {
-      byte[] digest =
-          MessageDigest.getInstance("SHA-256").digest(text.getBytes(StandardCharsets.UTF_8));
-      StringBuilder out = new StringBuilder();
-      for (byte b : digest) out.append(String.format(Locale.ROOT, "%02x", b & 255));
-      return out.toString();
-    } catch (java.security.NoSuchAlgorithmException impossible) {
-      throw new IllegalStateException(impossible);
-    }
-  }
 }

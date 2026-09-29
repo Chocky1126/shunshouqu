@@ -25,7 +25,7 @@ public class ColorOsRegressionTest {
   }
 
   @Test
-  public void unansweredClipboardOfferCanBeReadAgain() {
+  public void manualClipboardReadCanBeRepeated() {
     try (ActivityScenario<FeaturesActivity> a =
         ActivityScenario.launch(new Intent(c, FeaturesActivity.class).putExtra("mode", "more"))) {
       a.onActivity(
@@ -33,8 +33,8 @@ public class ColorOsRegressionTest {
             v.getSystemService(ClipboardManager.class)
                 .setPrimaryClip(ClipboardFixtures.text("fixture", "2-1-003"));
             try (ParcelStore s = new ParcelStore(v)) {
-              assertEquals("2-1-003", ClipboardImport.inspect(v, s));
-              assertEquals("2-1-003", ClipboardImport.inspect(v, s));
+              assertEquals("2-1-003", ClipboardImport.read(v, s).codes);
+              assertEquals("2-1-003", ClipboardImport.read(v, s).codes);
             } finally {
               v.getSystemService(ClipboardManager.class).clearPrimaryClip();
             }
@@ -54,7 +54,7 @@ public class ColorOsRegressionTest {
 
 
   @Test
-  public void explicitPasteWorksAfterIgnoreAndWithAutoDisabled() {
+  public void manualPasteWorksDespiteOldAutomaticClipboardPreferences() {
     try (ActivityScenario<FeaturesActivity> a =
         ActivityScenario.launch(new Intent(c, FeaturesActivity.class).putExtra("mode", "more"))) {
       a.onActivity(
@@ -62,12 +62,10 @@ public class ColorOsRegressionTest {
             ClipboardManager manager = v.getSystemService(ClipboardManager.class);
             manager.setPrimaryClip(ClipboardFixtures.text("fixture", "001234"));
             try (ParcelStore store = new ParcelStore(v)) {
-              ClipboardImport.dismiss(v, "001234");
-              assertNull(ClipboardImport.inspect(v, store));
               ClipboardImport.prefs(v).edit().putBoolean("clipboard_enabled", false).commit();
-              assertEquals("001234", ClipboardImport.read(v, store, true).codes);
+              assertEquals("001234", ClipboardImport.read(v, store).codes);
               manager.clearPrimaryClip();
-              ClipboardImport.Result empty = ClipboardImport.read(v, store, true);
+              ClipboardImport.Result empty = ClipboardImport.read(v, store);
               assertNull(empty.codes);
               assertTrue(empty.message.contains("读取受限"));
             } finally {
@@ -133,7 +131,7 @@ public class ColorOsRegressionTest {
       onView(withText("每天有待取件时提醒")).check(doesNotExist());
       onView(withText("发送测试提醒")).check(doesNotExist());
       onView(withText("手动添加指引")).check(doesNotExist());
-      onView(withText("打开应用时识别剪贴板")).perform(scrollTo()).check(matches(isDisplayed()));
+      onView(withText("打开应用时识别剪贴板")).check(doesNotExist());
     }
   }
 }

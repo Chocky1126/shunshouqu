@@ -8,6 +8,7 @@
     <item name="station_formats" type="id" />
     <item name="station_error" type="id" />
     <item name="total_count" type="id" />
+    <item name="home_complete_all" type="id" />
     <item name="batch_source" type="id" />
     <item name="focus_code" type="id" />
     <item name="edit_code" type="id" />
