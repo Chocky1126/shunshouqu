@@ -134,6 +134,12 @@ public final class FeaturesActivity extends Activity {
     return b;
   }
 
+  private Button darkAction(String text, Runnable run) {
+    Button b = action(text, run);
+    AppStyle.styleButton(b, AppStyle.PAPER, INK);
+    return b;
+  }
+
   private EditText input(String hint, boolean multiline) {
     EditText e = new EditText(this);
     e.setTextColor(INK);
@@ -636,7 +642,7 @@ public final class FeaturesActivity extends Activity {
     body.addView(label("保留最近 7 天，可恢复到待取列表。", 14, MUTED));
     List<HistoryEntry> history = store.history();
     if (history.isEmpty()) body.addView(label("最近还没有已取件记录", 20, INK));
-    if (!history.isEmpty()) action("清空已取件", () -> confirmClearHistory(history.size()));
+    if (!history.isEmpty()) darkAction("清空已取件", () -> confirmClearHistory(history.size()));
     SimpleDateFormat f = new SimpleDateFormat("MM月dd日 HH:mm", Locale.CHINA);
     for (HistoryEntry entry : history) {
       gap();
@@ -911,7 +917,7 @@ public final class FeaturesActivity extends Activity {
   private void showMore() {
     shell("更多设置");
     body.addView(label("帮助", 19, INK));
-    action(
+    darkAction(
         "使用引导",
         () -> {
           guidePage = 0;
@@ -922,7 +928,7 @@ public final class FeaturesActivity extends Activity {
     showAppearanceSettings();
     body.addView(label("桌面小部件", 19, INK));
     body.addView(label("4×4 尺寸，可查看取件码、逐件完成或一键取出全部。", 14, MUTED));
-    action(
+    darkAction(
         "添加到桌面",
         this::showWidgetPreview);
     gap();
