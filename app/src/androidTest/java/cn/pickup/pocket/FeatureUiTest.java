@@ -50,10 +50,35 @@ public class FeatureUiTest {
       a.recreate();
       onView(withContentDescription("选择取件码 1-2-0034")).check(matches(isNotChecked()));
       onView(withContentDescription("选择取件码 001234")).check(matches(not(isEnabled())));
-      onView(withText("保存勾选的取件码")).perform(scrollTo(), click());
+      onView(withText("保存勾选的取件码")).perform(click());
       try (ParcelStore s = new ParcelStore(context)) {
         assertEquals(2, s.all().size());
         assertTrue(s.all().stream().anyMatch(p -> p.code.equals("2-1-003")));
+      }
+    }
+  }
+
+  @Test
+  public void batchSaveStaysFixedWhileSelectingAtBottomOfLongList() {
+    StringBuilder source = new StringBuilder();
+    for (int i = 0; i < 20; i++) source.append(100000 + i).append('\n');
+    try (ActivityScenario<FeaturesActivity> a = ActivityScenario.launch(
+        new Intent(context, FeaturesActivity.class).putExtra("mode", "batch")
+            .putExtra("source", source.toString()))) {
+      int[] before = new int[2];
+      onView(withText("保存勾选的取件码")).check(matches(isDisplayed())).check((view, error) -> {
+        if (error != null) throw error;
+        view.getLocationOnScreen(before);
+      });
+      onView(withContentDescription("选择取件码 100019")).perform(scrollTo(), click());
+      onView(withText("保存勾选的取件码")).check(matches(isDisplayed())).check((view, error) -> {
+        if (error != null) throw error;
+        int[] after = new int[2]; view.getLocationOnScreen(after);
+        assertArrayEquals(before, after);
+      }).perform(click());
+      try (ParcelStore s = new ParcelStore(context)) {
+        assertEquals(19, s.all().size());
+        assertFalse(s.all().stream().anyMatch(p -> p.code.equals("100019")));
       }
     }
   }
@@ -65,7 +90,7 @@ public class FeatureUiTest {
       onView(withText("识别取件码")).perform(scrollTo(), click());
       onView(withId(R.id.batch_source))
           .perform(scrollTo(), replaceText("001235"), closeSoftKeyboard());
-      onView(withText("保存勾选的取件码")).perform(scrollTo(), click());
+      onView(withText("保存勾选的取件码")).perform(click());
       onView(withText(containsString("文字已修改"))).check(matches(isDisplayed()));
       try (ParcelStore s = new ParcelStore(context)) {
         assertTrue(s.all().isEmpty());

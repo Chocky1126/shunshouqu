@@ -43,7 +43,7 @@ public class UpgradeFeaturesTest {
       }
       a.recreate();
       onView(withContentDescription("选择取件码 001234")).perform(scrollTo(), click());
-      onView(withText("保存勾选的取件码")).perform(closeSoftKeyboard(), scrollTo(), click());
+      onView(withText("保存勾选的取件码")).perform(closeSoftKeyboard(), click());
       try (ParcelStore s = new ParcelStore(c)) {
         assertEquals(1, s.all().size());
         assertEquals("2-1-003", s.all().get(0).code);
@@ -89,7 +89,7 @@ public class UpgradeFeaturesTest {
       try (ParcelStore s = new ParcelStore(c)) {
         assertTrue(s.all().isEmpty());
       }
-      onView(withText("保存勾选的取件码")).perform(closeSoftKeyboard(), scrollTo(), click());
+      onView(withText("保存勾选的取件码")).perform(closeSoftKeyboard(), click());
       try (ParcelStore s = new ParcelStore(c)) {
         assertEquals(3, s.all().size());
       }
@@ -132,7 +132,7 @@ public class UpgradeFeaturesTest {
         SystemClock.sleep(100);
       }
       assertTrue("Shared images must arrive in the internal preview", ready.get());
-      onView(withText("保存勾选的取件码")).perform(closeSoftKeyboard(), scrollTo(), click());
+      onView(withText("保存勾选的取件码")).perform(closeSoftKeyboard(), click());
       try (ParcelStore s = new ParcelStore(c)) {
         assertEquals(3, s.all().size());
       }

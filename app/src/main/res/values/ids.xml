@@ -11,6 +11,7 @@
     <item name="total_count" type="id" />
     <item name="home_complete_all" type="id" />
     <item name="batch_source" type="id" />
+    <item name="batch_footer" type="id" />
     <item name="focus_code" type="id" />
     <item name="edit_code" type="id" />
     <item name="edit_station" type="id" />

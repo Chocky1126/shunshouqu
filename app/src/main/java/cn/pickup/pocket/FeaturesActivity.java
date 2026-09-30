@@ -134,6 +134,17 @@ public final class FeaturesActivity extends Activity {
     return b;
   }
 
+  private void fixedPrimary(LinearLayout root, String text, Runnable run, int footerId) {
+    LinearLayout footer = column();
+    footer.setId(footerId);
+    footer.setPadding(dp(22), dp(8), dp(22), dp(18));
+    footer.setBackgroundColor(BG);
+    Button button = AppStyle.button(this, text, Color.WHITE, AppStyle.PRIMARY);
+    button.setOnClickListener(v -> run.run());
+    footer.addView(button, new LinearLayout.LayoutParams(-1, -2));
+    root.addView(footer, new LinearLayout.LayoutParams(-1, -2));
+  }
+
   private EditText input(String hint, boolean multiline) {
     EditText e = new EditText(this);
     e.setTextColor(INK);
@@ -198,7 +209,7 @@ public final class FeaturesActivity extends Activity {
     return root;
   }
 
-  private void shell(String title) {
+  private LinearLayout shell(String title) {
     LinearLayout root = shellRoot(title);
     ScrollView scroll = new ScrollView(this);
     scroll.setFillViewport(true);
@@ -208,6 +219,7 @@ public final class FeaturesActivity extends Activity {
     scroll.addView(body);
     root.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
     AppStyle.enter(body);
+    return root;
   }
 
   private void render() {
@@ -251,7 +263,7 @@ public final class FeaturesActivity extends Activity {
   }
 
   private void showBatch() {
-    shell("批量录入");
+    LinearLayout root = shell("批量录入");
     body.addView(label("粘贴多条短信或取件码，识别后核对再保存。", 14, MUTED));
     sourceInput = input("粘贴短信全文，或每行一个取件码", true);
     sourceInput.setId(R.id.batch_source);
@@ -334,7 +346,8 @@ public final class FeaturesActivity extends Activity {
       body.addView(c, choiceParams);
       candidates.put(code, c);
     }
-    primary(
+    fixedPrimary(
+        root,
         "保存勾选的取件码",
         () -> {
           // Edited source must be re-analysed so the visible preview cannot silently become stale.
@@ -356,7 +369,8 @@ public final class FeaturesActivity extends Activity {
           } catch (RuntimeException e) {
             message("保存失败，可能有取件码已录入或站点格式已变化。此批次未保存，请重新识别。");
           }
-        });
+        },
+        R.id.batch_footer);
   }
 
   private void requestSmsScan() {
@@ -698,14 +712,7 @@ public final class FeaturesActivity extends Activity {
       body.addView(card, cardParams);
     }
     if (!history.isEmpty()) {
-      LinearLayout footer = column();
-      footer.setId(R.id.history_footer);
-      footer.setPadding(dp(22), dp(8), dp(22), dp(18));
-      footer.setBackgroundColor(BG);
-      Button clear = AppStyle.button(this, "清空已取件", Color.WHITE, AppStyle.PRIMARY);
-      clear.setOnClickListener(v -> confirmClearHistory(history.size()));
-      footer.addView(clear, new LinearLayout.LayoutParams(-1, -2));
-      root.addView(footer, new LinearLayout.LayoutParams(-1, -2));
+      fixedPrimary(root, "清空已取件", () -> confirmClearHistory(history.size()), R.id.history_footer);
     }
     AppStyle.enter(body);
   }

@@ -172,9 +172,6 @@ public final class MainActivity extends Activity {
     groups = column(); content.addView(groups);
     LinearLayout footer = column();
     footer.setPadding(dp(26),dp(compact ? 0 : 4),dp(26),dp(compact ? 4 : 12));
-    TextView hint = text("左滑标记已取 · 长按编辑",12,MUTED,false);
-    hint.setGravity(Gravity.CENTER); hint.setPadding(0,dp(6),0,dp(12));
-    if (!compact) footer.addView(hint);
     LinearLayout actions = row();
     LinearLayout entry = row();
     int actionHeight = dp(compact ? 50 : 56);
