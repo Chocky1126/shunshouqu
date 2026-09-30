@@ -241,7 +241,7 @@ public final class MainActivity extends Activity {
     int popupHeight = panel.getMeasuredHeight();
     android.widget.PopupWindow popup = new android.widget.PopupWindow(panel,popupWidth,popupHeight,true);
     popup.setOutsideTouchable(true);
-    popup.setElevation(dp(3));
+    popup.setElevation(dp(10));
     homePopup = popup;
     int[] location = new int[2];
     anchor.getLocationOnScreen(location);
@@ -326,7 +326,7 @@ public final class MainActivity extends Activity {
         android.view.ViewGroup.LayoutParams.WRAP_CONTENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT,true);
     popup.setBackgroundDrawable(AppStyle.surface(this,AppStyle.PAPER,6,true));
     homePopup = popup;
-    popup.setOutsideTouchable(true); popup.setElevation(dp(3));
+    popup.setOutsideTouchable(true); popup.setElevation(dp(10));
     String[] labels = {"手动录入","已取快递","站点设置","更多设置"};
     int[] icons = {R.drawable.ic_add,R.drawable.ic_history,R.drawable.ic_settings,R.drawable.ic_tune};
     for (int i=0;i<labels.length;i++) {

@@ -938,6 +938,8 @@ public final class FeaturesActivity extends Activity {
     body.addView(label("4×4 尺寸，可查看取件码、逐件完成或一键取出全部。", 14, MUTED));
     primary("添加到桌面", this::showWidgetPreview);
     gap();
+    body.addView(label("帮助", 19, INK));
+    body.addView(label("查看顺手取的完整使用引导。", 14, MUTED));
     primary(
         "使用引导",
         () -> {

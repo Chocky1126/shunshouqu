@@ -85,13 +85,20 @@ final class AppStyle {
       final PixelSurface body = new PixelSurface(c, PAPER, true);
       final android.graphics.Paint paint = new android.graphics.Paint();
       final android.graphics.Path pointer = new android.graphics.Path();
+      { setColor(PAPER); }
+      @Override public void getOutline(android.graphics.Outline outline) {
+        android.graphics.Rect bounds = getBounds();
+        int extra = dp(c, 6);
+        outline.setRect(bounds.left, bounds.top + (pointerTop ? extra : 0),
+            bounds.right, bounds.bottom - (pointerTop ? 0 : extra));
+        outline.setAlpha(1f);
+      }
       @Override public void draw(android.graphics.Canvas canvas) {
         android.graphics.Rect bounds = getBounds();
         int extra = dp(c, 6), step = dp(c, 2);
         int top = bounds.top + (pointerTop ? extra : 0);
         int bottom = bounds.bottom - (pointerTop ? 0 : extra);
         body.setBounds(bounds.left, top, bounds.right, bottom);
-        body.setStroke(dp(c, 1.5f), INK);
         body.draw(canvas);
         float x = bounds.left + Math.max(dp(c, 14), Math.min(pointerX, bounds.width()-dp(c, 14)));
         float y = pointerTop ? top+dp(c, 2) : bottom-dp(c, 2);
@@ -113,7 +120,7 @@ final class AppStyle {
         paint.setStyle(android.graphics.Paint.Style.FILL);
         canvas.drawPath(pointer, paint);
         paint.setColor(INK);
-        paint.setStrokeWidth(dp(c, 1.5f));
+        paint.setStrokeWidth(dp(c, 3)*2/3f);
         paint.setStyle(android.graphics.Paint.Style.STROKE);
         canvas.drawPath(pointer, paint);
       }
