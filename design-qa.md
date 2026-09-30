@@ -10,4 +10,4 @@
 - `Shunshouqu-v1.7.10-home.png`：移除提示后的首页，两个原有底部操作按钮保留。
 - `validation-build.txt`：构建通过，Release Lint 0 错误、16 项既有警告。
 
-本次核对未发现剩余显示问题。未连接 OPPO 硬件，ColorOS 16 视觉效果仍待覆盖安装确认。未发布 GitHub。
+本次核对未发现剩余显示问题。未连接 OPPO 硬件，ColorOS 16 视觉效果仍待覆盖安装确认。正式发布验证与安装说明见 `DELIVERY.md`。
