@@ -1,0 +1,18 @@
+name: 功能与体验建议
+description: 分享取件场景中的不便和改进想法
+title: "[建议] "
+body:
+  - type: textarea
+    id: scenario
+    attributes:
+      label: 使用场景
+      description: 在什么情况下遇到了什么不便？
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: 希望怎样改进
+      description: 请尽量围绕轻量、离线、本机使用的取件场景。
+    validations:
+      required: true

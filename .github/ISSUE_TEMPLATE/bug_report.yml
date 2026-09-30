@@ -1,0 +1,36 @@
+name: 问题反馈
+description: 安装、录入、界面、短信识别或桌面小部件遇到了问题
+title: "[问题] "
+body:
+  - type: markdown
+    attributes:
+      value: "请先搜索已有反馈。截图和示例请隐去手机号、真实取件码及短信内容。"
+  - type: input
+    id: version
+    attributes:
+      label: 应用版本
+      placeholder: 例如 1.7.10
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: 手机与系统
+      placeholder: 例如 OPPO Find X8 / ColorOS 16 / Android 16
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 操作步骤
+      description: 从哪个页面开始，依次做了哪些操作？
+      placeholder: "1. 打开……\n2. 点击……\n3. 出现……"
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: 期望与实际结果
+      description: 希望出现什么结果？实际发生了什么？可附脱敏截图。
+    validations:
+      required: true
