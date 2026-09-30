@@ -177,29 +177,33 @@ public final class MainActivity extends Activity {
     if (!compact) footer.addView(hint);
     LinearLayout actions = row();
     LinearLayout entry = row();
-    Button add = button("录入取件码",Color.WHITE,AppStyle.PRIMARY);
+    int actionHeight = dp(compact ? 50 : 56);
+    entry.setBackground(AppStyle.surface(this,AppStyle.PRIMARY,6,true));
+    Button add = button("录入取件码",Color.WHITE,Color.TRANSPARENT);
     add.setId(R.id.add_code); add.setTextSize(compact ? 14 : 16);
-    add.setPadding(dp(2), 0, dp(2), 0);
+    add.setPadding(dp(8), 0, dp(8), 0);
     add.setOnClickListener(v -> showAdd());
     add.setContentDescription("录入取件码");
-    add.setMinimumHeight(dp(compact ? 50 : 60));
-    entry.addView(add,new LinearLayout.LayoutParams(0,-2,1));
-    Button options = button("▴", Color.WHITE, AppStyle.PRIMARY);
+    add.setMinimumHeight(actionHeight);
+    entry.addView(add,new LinearLayout.LayoutParams(0,-1,1));
+    View divider = new View(this);
+    divider.setBackgroundColor(0x66FFF6DB);
+    entry.addView(divider,new LinearLayout.LayoutParams(dp(1),dp(28)));
+    Button options = button("▴", Color.WHITE, Color.TRANSPARENT);
     options.setId(R.id.add_code_options);
     options.setTextSize(22);
     options.setPadding(0,0,0,0);
     options.setContentDescription("展开更多录入方式");
-    options.setMinimumHeight(dp(compact ? 50 : 60));
+    options.setMinimumHeight(actionHeight);
     options.setOnClickListener(v -> showEntryOptions(options));
-    LinearLayout.LayoutParams optionParams = new LinearLayout.LayoutParams(dp(42),-2);
-    optionParams.setMarginStart(dp(2));
+    LinearLayout.LayoutParams optionParams = new LinearLayout.LayoutParams(dp(44),-1);
     entry.addView(options,optionParams);
-    actions.addView(entry,new LinearLayout.LayoutParams(0,-2,3));
+    actions.addView(entry,new LinearLayout.LayoutParams(0,actionHeight,5));
     completeAll = button("一键取出", INK, AppStyle.TINT);
     completeAll.setId(R.id.home_complete_all);
     completeAll.setTextSize(compact ? 13 : 15);
-    completeAll.setPadding(dp(2),0,dp(2),0);
-    completeAll.setMinimumHeight(dp(compact ? 50 : 60));
+    completeAll.setPadding(dp(8),0,dp(8),0);
+    completeAll.setMinimumHeight(actionHeight);
     completeAll.setOnClickListener(v -> {
       try {
         int count = store.completeAll();
@@ -209,8 +213,8 @@ public final class MainActivity extends Activity {
         showError("一键取出失败，待取清单未更改。", null);
       }
     });
-    LinearLayout.LayoutParams completeParams = new LinearLayout.LayoutParams(0,-2,2);
-    completeParams.setMarginStart(dp(8));
+    LinearLayout.LayoutParams completeParams = new LinearLayout.LayoutParams(0,actionHeight,3);
+    completeParams.setMarginStart(dp(10));
     actions.addView(completeAll,completeParams);
     footer.addView(actions,new LinearLayout.LayoutParams(-1,-2));
     root.addView(footer);
