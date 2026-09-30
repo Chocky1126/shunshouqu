@@ -227,20 +227,18 @@ public final class MainActivity extends Activity {
     String[] labels = {"批量录入", "截图识别", "扫描短信"};
     String[] modes = {"batch", "ocr", "sms"};
     int[] icons = {R.drawable.ic_content_paste,R.drawable.ic_image_search,R.drawable.ic_sms};
-    int itemHeight = dp(48);
     for (int i=0;i<labels.length;i++) {
       String mode = modes[i];
-      Button item = button(labels[i], INK, Color.TRANSPARENT);
-      item.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
-      AppStyle.icon(item,icons[i],INK,false);
+      LinearLayout item = menuItem(labels[i], icons[i]);
+      item.setMinimumHeight(dp(48));
       item.setOnClickListener(v -> {
         if (homePopup != null) homePopup.dismiss();
         openFeature(mode,-1,-1);
       });
-      panel.addView(item,new LinearLayout.LayoutParams(-1,itemHeight));
+      panel.addView(item,new LinearLayout.LayoutParams(-1,-2));
     }
     int popupWidth = menuWidth(panel);
-    int popupHeight = itemHeight*labels.length+dp(16);
+    int popupHeight = panel.getMeasuredHeight();
     android.widget.PopupWindow popup = new android.widget.PopupWindow(panel,popupWidth,popupHeight,true);
     popup.setBackgroundDrawable(AppStyle.surface(this,AppStyle.PAPER,6,true));
     popup.setOutsideTouchable(true);
@@ -254,20 +252,29 @@ public final class MainActivity extends Activity {
     popup.showAtLocation(anchor,Gravity.TOP|Gravity.LEFT,x,y);
   }
 
+  private LinearLayout menuItem(String label, int iconResource) {
+    // Center the complete icon-and-label group, including shorter menu labels.
+    LinearLayout item = row();
+    item.setGravity(Gravity.CENTER);
+    item.setPadding(dp(16), dp(12), dp(16), dp(12));
+    item.setMinimumHeight(dp(50));
+    item.setBackground(AppStyle.ripple(this, Color.TRANSPARENT, 6));
+    item.setFocusable(true);
+    android.widget.ImageView icon = new android.widget.ImageView(this);
+    icon.setImageResource(iconResource);
+    icon.setColorFilter(INK);
+    icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+    item.addView(icon, new LinearLayout.LayoutParams(dp(23), dp(23)));
+    LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(-2, -2);
+    labelParams.setMarginStart(dp(8));
+    item.addView(text(label, 15, INK, true), labelParams);
+    return item;
+  }
+
   private int menuWidth(LinearLayout panel) {
-    int itemWidth = 0;
-    for (int i = 0; i < panel.getChildCount(); i++) {
-      TextView item = (TextView) panel.getChildAt(i);
-      int width = (int) Math.ceil(android.text.Layout.getDesiredWidth(item.getText(), item.getPaint()))
-          + item.getPaddingLeft() + item.getPaddingRight();
-      // Relative icons are not resolved into compound padding until the view is attached.
-      android.graphics.drawable.Drawable[] icons = item.getCompoundDrawablesRelative();
-      for (int side = 0; side <= 2; side += 2) {
-        if (icons[side] != null) width += icons[side].getBounds().width() + item.getCompoundDrawablePadding();
-      }
-      itemWidth = Math.max(itemWidth, width);
-    }
-    return Math.min(itemWidth + panel.getPaddingLeft() + panel.getPaddingRight(),
+    panel.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+    return Math.min(panel.getMeasuredWidth(),
         getResources().getDisplayMetrics().widthPixels - dp(36));
   }
 
@@ -286,9 +293,7 @@ public final class MainActivity extends Activity {
     int[] icons = {R.drawable.ic_add,R.drawable.ic_history,R.drawable.ic_settings,R.drawable.ic_tune};
     for (int i=0;i<labels.length;i++) {
       final int action=i;
-      Button item=button(labels[i],INK,Color.TRANSPARENT);
-      item.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
-      AppStyle.icon(item,icons[i],INK,false);
+      LinearLayout item = menuItem(labels[i], icons[i]);
       if (i==2) item.setId(R.id.station_settings);
       item.setOnClickListener(v -> {
         popup.dismiss();
