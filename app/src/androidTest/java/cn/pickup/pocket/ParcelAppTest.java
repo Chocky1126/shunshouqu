@@ -25,8 +25,8 @@ public class ParcelAppTest {
     }
     private void restoreFromHistory(String code) {
         onView(withId(R.id.home_menu)).perform(click());
-        onView(withText("已取件")).perform(click());
-        onView(withText("恢复 " + code)).perform(scrollTo(), click());
+        onView(withText("已取快递")).perform(click());
+        onView(withContentDescription("恢复 " + code)).perform(scrollTo(), click());
         onView(withText("恢复到待取")).perform(click());
         onView(withContentDescription("返回取件清单")).perform(click());
     }

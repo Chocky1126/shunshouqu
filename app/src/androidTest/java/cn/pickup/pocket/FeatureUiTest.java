@@ -144,7 +144,7 @@ public class FeatureUiTest {
     }
     try (ActivityScenario<FeaturesActivity> a = launch("history")) {
       a.recreate();
-      onView(withText("恢复 001234")).perform(scrollTo(), click());
+      onView(withContentDescription("恢复 001234")).perform(scrollTo(), click());
       onView(withText("恢复到待取")).perform(click());
       try (ParcelStore s = new ParcelStore(context)) {
         assertEquals(1, s.all().size());

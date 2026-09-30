@@ -17,4 +17,6 @@
     <item name="edit_error" type="id" />
     <item name="guide_content_scroll" type="id" />
     <item name="guide_footer" type="id" />
+    <item name="history_scroll" type="id" />
+    <item name="history_footer" type="id" />
 </resources>

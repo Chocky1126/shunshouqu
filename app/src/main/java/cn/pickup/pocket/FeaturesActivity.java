@@ -632,32 +632,82 @@ public final class FeaturesActivity extends Activity {
   }
 
   private void showHistory() {
-    shell("已取件");
-    body.addView(label("保留最近 7 天，可恢复到待取列表。", 14, MUTED));
+    LinearLayout root = shellRoot("已取件");
+    TextView notice = label("保留最近 7 天，可恢复到待取列表。", 14, MUTED);
+    notice.setPadding(dp(22), dp(8), dp(22), dp(14));
+    root.addView(notice, new LinearLayout.LayoutParams(-1, -2));
+    ScrollView scroll = new ScrollView(this);
+    scroll.setId(R.id.history_scroll);
+    scroll.setFillViewport(true);
+    body = column();
+    body.setPadding(dp(22), dp(4), dp(22), dp(12));
+    scroll.addView(body);
+    root.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
     List<HistoryEntry> history = store.history();
     if (history.isEmpty()) body.addView(label("最近还没有已取件记录", 20, INK));
-    if (!history.isEmpty()) primary("清空已取件", () -> confirmClearHistory(history.size()));
+    Map<Integer, Station> stations = new HashMap<>();
+    for (Station station : store.stations()) stations.put(station.id, station);
     SimpleDateFormat f = new SimpleDateFormat("MM月dd日 HH:mm", Locale.CHINA);
     for (HistoryEntry entry : history) {
-      gap();
-      TextView code = label(entry.code, 24, INK);
-      code.setTypeface(Typeface.MONOSPACE);
       LinearLayout card = column();
-      card.setPadding(dp(18), dp(14), dp(18), dp(14));
-      card.setBackground(AppStyle.surface(this, Color.WHITE, 16, false));
-      card.addView(code);
-      card.addView(
-          label(
-              entry.stationName + " · " + f.format(new Date(entry.collectedAt)) + " 已取",
-              13,
-              MUTED));
-      Button restore = AppStyle.button(this, "恢复 " + entry.code, INK, AppStyle.TINT);
+      card.setPadding(dp(16), dp(10), dp(16), dp(10));
+      LinearLayout metadata = new LinearLayout(this);
+      metadata.setGravity(Gravity.CENTER_VERTICAL);
+      ImageView icon = new ImageView(this);
+      Station station = stations.get(entry.stationId);
+      icon.setImageResource(station == null ? R.drawable.pixel_parcel
+          : StationIcons.RESOURCES[StationIcons.indexOf(station.iconKey)]);
+      icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+      metadata.addView(icon, new LinearLayout.LayoutParams(dp(26), dp(26)));
+      TextView stationName = label(entry.stationName, 14, MUTED);
+      stationName.setPadding(dp(8), 0, dp(8), 0);
+      metadata.addView(stationName, new LinearLayout.LayoutParams(0, -2, 1));
+      TextView time = label(f.format(new Date(entry.collectedAt)), 13, MUTED);
+      time.setPadding(0, 0, 0, 0);
+      metadata.addView(time, new LinearLayout.LayoutParams(-2, -2));
+      card.addView(metadata, new LinearLayout.LayoutParams(-1, -2));
+      View seam = new View(this);
+      android.graphics.drawable.GradientDrawable dashed = new android.graphics.drawable.GradientDrawable();
+      dashed.setShape(android.graphics.drawable.GradientDrawable.LINE);
+      dashed.setStroke(dp(1), AppStyle.LINE, dp(3), dp(3));
+      seam.setBackground(dashed);
+      LinearLayout.LayoutParams seamParams = new LinearLayout.LayoutParams(-1, dp(2));
+      seamParams.topMargin = dp(8);
+      seamParams.bottomMargin = dp(8);
+      card.addView(seam, seamParams);
+      card.setBackground(AppStyle.receiptSurface(this, seam));
+      LinearLayout details = new LinearLayout(this);
+      details.setGravity(Gravity.CENTER_VERTICAL);
+      TextView code = label(entry.code, 24, INK);
+      code.setTypeface(Typeface.DEFAULT);
+      code.setPadding(0, 0, dp(12), 0);
+      code.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);
+      details.addView(code, new LinearLayout.LayoutParams(0, -2, 1));
+      Button restore = AppStyle.button(this, "恢复", INK, AppStyle.TINT);
+      restore.setContentDescription("恢复 " + entry.code);
+      restore.setMinWidth(dp(80));
+      restore.setMinimumWidth(dp(80));
+      restore.setMinHeight(dp(40));
+      restore.setMinimumHeight(dp(40));
+      restore.setPadding(dp(12), dp(6), dp(12), dp(6));
       restore.setOnClickListener(v -> restoreHistory(entry));
-      LinearLayout.LayoutParams restoreParams = new LinearLayout.LayoutParams(-1, -2);
-      restoreParams.topMargin = dp(10);
-      card.addView(restore, restoreParams);
-      body.addView(card);
+      details.addView(restore, new LinearLayout.LayoutParams(-2, -2));
+      card.addView(details, new LinearLayout.LayoutParams(-1, -2));
+      LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(-1, -2);
+      if (body.getChildCount() > 0) cardParams.topMargin = dp(12);
+      body.addView(card, cardParams);
     }
+    if (!history.isEmpty()) {
+      LinearLayout footer = column();
+      footer.setId(R.id.history_footer);
+      footer.setPadding(dp(22), dp(8), dp(22), dp(18));
+      footer.setBackgroundColor(BG);
+      Button clear = AppStyle.button(this, "清空已取件", Color.WHITE, AppStyle.PRIMARY);
+      clear.setOnClickListener(v -> confirmClearHistory(history.size()));
+      footer.addView(clear, new LinearLayout.LayoutParams(-1, -2));
+      root.addView(footer, new LinearLayout.LayoutParams(-1, -2));
+    }
+    AppStyle.enter(body);
   }
 
   private void confirmClearHistory(int count) {

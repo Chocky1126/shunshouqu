@@ -37,6 +37,10 @@ final class AppStyle {
     return new PixelSurface(c, color == Color.WHITE ? PAPER : color, border);
   }
 
+  static GradientDrawable receiptSurface(Context c, View seam) {
+    return new PixelSurface(c, PAPER, true, seam);
+  }
+
   static final int PAPER = 0xFFFFFCF1;
   private static Typeface pixelFont;
   static Typeface pixel(Context c) {
@@ -52,7 +56,12 @@ final class AppStyle {
     private boolean border;
     private int strokeColor = INK;
     private float strokeWidth;
+    private final View seam;
     PixelSurface(Context c, int color, boolean border) {
+      this(c, color, border, null);
+    }
+    PixelSurface(Context c, int color, boolean border, View seam) {
+      this.seam = seam;
       step = dp(c, 3); this.border = border; strokeWidth=step*2/3; setColor(color);
     }
     @Override public void setStroke(int width, int color) {
@@ -65,10 +74,20 @@ final class AppStyle {
       path.reset();
       path.moveTo(l+2*k,t); path.lineTo(r-2*k,t); path.lineTo(r-2*k,t+k);
       path.lineTo(r-k,t+k); path.lineTo(r-k,t+2*k); path.lineTo(r,t+2*k);
+      float seamY = seam == null ? 0 : b.top + seam.getTop() + seam.getHeight()/2f;
+      if (seam != null) {
+        path.lineTo(r,seamY-k); path.lineTo(r-k,seamY-k);
+        path.lineTo(r-k,seamY+k); path.lineTo(r,seamY+k);
+      }
       path.lineTo(r,d-2*k); path.lineTo(r-k,d-2*k); path.lineTo(r-k,d-k);
       path.lineTo(r-2*k,d-k); path.lineTo(r-2*k,d); path.lineTo(l+2*k,d);
       path.lineTo(l+2*k,d-k); path.lineTo(l+k,d-k); path.lineTo(l+k,d-2*k);
-      path.lineTo(l,d-2*k); path.lineTo(l,t+2*k); path.lineTo(l+k,t+2*k);
+      path.lineTo(l,d-2*k);
+      if (seam != null) {
+        path.lineTo(l,seamY+k); path.lineTo(l+k,seamY+k);
+        path.lineTo(l+k,seamY-k); path.lineTo(l,seamY-k);
+      }
+      path.lineTo(l,t+2*k); path.lineTo(l+k,t+2*k);
       path.lineTo(l+k,t+k); path.lineTo(l+2*k,t+k); path.close();
       paint.setColor(getColor() == null ? PAPER : getColor().getDefaultColor());
       paint.setStyle(android.graphics.Paint.Style.FILL); canvas.drawPath(path,paint);

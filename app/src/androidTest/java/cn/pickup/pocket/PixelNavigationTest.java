@@ -46,7 +46,7 @@ public class PixelNavigationTest {
       onView(withId(R.id.add_code)).perform(click());
       onView(withId(R.id.code_input)).perform(replaceText("001234"),closeSoftKeyboard());
       onView(withText("保存取件码")).perform(click());
-      onView(withText("001234")).check(matches(isDisplayed()));
+      onView(withText("001234")).perform(scrollTo()).check(matches(isDisplayed()));
     }
   }
 

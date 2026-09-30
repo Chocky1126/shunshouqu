@@ -37,8 +37,8 @@ public class SimplePickupTest {
    onView(withContentDescription("删除取件码 1-2-0034")).perform(click());
    onView(withText("撤销")).check(doesNotExist());a.recreate();
    onView(withId(R.id.total_count)).check(matches(withText("0")));
-   onView(withId(R.id.home_menu)).perform(click());onView(withText("已取件")).perform(click());
-   onView(withText("恢复 1-2-0034")).perform(scrollTo(),click());onView(withText("恢复到待取")).perform(click());
+   onView(withId(R.id.home_menu)).perform(click());onView(withText("已取快递")).perform(click());
+   onView(withContentDescription("恢复 1-2-0034")).perform(scrollTo(),click());onView(withText("恢复到待取")).perform(click());
    onView(withContentDescription("返回取件清单")).perform(click());
    onView(withText("1-2-0034")).check(matches(isDisplayed()));
   }
