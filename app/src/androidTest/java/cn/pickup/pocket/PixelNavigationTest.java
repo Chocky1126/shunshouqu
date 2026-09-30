@@ -31,7 +31,7 @@ public class PixelNavigationTest {
     c.deleteDatabase("pickup.db");
     try (ActivityScenario<MainActivity> a=ActivityScenario.launch(MainActivity.class)) {
       onView(withId(R.id.home_menu)).perform(click());
-      for (String title:new String[]{"手动录入","已取件","站点设置","更多设置"})
+      for (String title:new String[]{"手动录入","已取快递","站点设置","更多设置"})
         onView(withText(title)).check(matches(isDisplayed()));
       for (String title:new String[]{"粘贴录入","截图识别","扫描近三天短信"})
         onView(withText(title)).check(doesNotExist());
@@ -39,7 +39,7 @@ public class PixelNavigationTest {
       onView(withText("完成")).perform(click());
       onView(withId(R.id.add_code)).check(matches(isDisplayed()));
       onView(withId(R.id.home_menu)).perform(click());
-      onView(withText("已取件")).perform(click());
+      onView(withText("已取快递")).perform(click());
       awaitState(a, Lifecycle.State.CREATED);
       onView(withContentDescription("返回取件清单")).perform(click());
       awaitState(a, Lifecycle.State.RESUMED);

@@ -79,6 +79,47 @@ final class AppStyle {
     }
   }
 
+  /** Menu-only pixel pointer; the rest of the app keeps its existing surfaces. */
+  static GradientDrawable menuSurface(Context c, int pointerX, boolean pointerTop) {
+    return new GradientDrawable() {
+      final PixelSurface body = new PixelSurface(c, PAPER, true);
+      final android.graphics.Paint paint = new android.graphics.Paint();
+      final android.graphics.Path pointer = new android.graphics.Path();
+      @Override public void draw(android.graphics.Canvas canvas) {
+        android.graphics.Rect bounds = getBounds();
+        int extra = dp(c, 6), step = dp(c, 2);
+        int top = bounds.top + (pointerTop ? extra : 0);
+        int bottom = bounds.bottom - (pointerTop ? 0 : extra);
+        body.setBounds(bounds.left, top, bounds.right, bottom);
+        body.setStroke(dp(c, 1.5f), INK);
+        body.draw(canvas);
+        float x = bounds.left + Math.max(dp(c, 14), Math.min(pointerX, bounds.width()-dp(c, 14)));
+        float y = pointerTop ? top+dp(c, 2) : bottom-dp(c, 2);
+        int direction = pointerTop ? -1 : 1;
+        pointer.reset();
+        pointer.moveTo(x-3*step, y);
+        pointer.lineTo(x-3*step, y+direction*step);
+        pointer.lineTo(x-2*step, y+direction*step);
+        pointer.lineTo(x-2*step, y+direction*2*step);
+        pointer.lineTo(x-step, y+direction*2*step);
+        pointer.lineTo(x-step, y+direction*3*step);
+        pointer.lineTo(x+step, y+direction*3*step);
+        pointer.lineTo(x+step, y+direction*2*step);
+        pointer.lineTo(x+2*step, y+direction*2*step);
+        pointer.lineTo(x+2*step, y+direction*step);
+        pointer.lineTo(x+3*step, y+direction*step);
+        pointer.lineTo(x+3*step, y);
+        paint.setColor(PAPER);
+        paint.setStyle(android.graphics.Paint.Style.FILL);
+        canvas.drawPath(pointer, paint);
+        paint.setColor(INK);
+        paint.setStrokeWidth(dp(c, 1.5f));
+        paint.setStyle(android.graphics.Paint.Style.STROKE);
+        canvas.drawPath(pointer, paint);
+      }
+    };
+  }
+
   static RippleDrawable ripple(Context c, int color, int radius) {
     return new RippleDrawable(
         ColorStateList.valueOf(color == INK || color == ACCENT || color == PRIMARY ? 0x30FFFFFF : 0x1833291E),

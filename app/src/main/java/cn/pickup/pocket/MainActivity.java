@@ -223,7 +223,7 @@ public final class MainActivity extends Activity {
 
   private void showEntryOptions(View anchor) {
     LinearLayout panel = column();
-    panel.setPadding(dp(8),dp(8),dp(8),dp(8));
+    panel.setPadding(dp(8),dp(8),dp(8),dp(14));
     String[] labels = {"批量录入", "截图识别", "扫描短信"};
     String[] modes = {"batch", "ocr", "sms"};
     int[] icons = {R.drawable.ic_content_paste,R.drawable.ic_image_search,R.drawable.ic_sms};
@@ -235,12 +235,11 @@ public final class MainActivity extends Activity {
         if (homePopup != null) homePopup.dismiss();
         openFeature(mode,-1,-1);
       });
-      panel.addView(item,new LinearLayout.LayoutParams(-1,-2));
+      addMenuItem(panel, item, i);
     }
     int popupWidth = menuWidth(panel);
     int popupHeight = panel.getMeasuredHeight();
     android.widget.PopupWindow popup = new android.widget.PopupWindow(panel,popupWidth,popupHeight,true);
-    popup.setBackgroundDrawable(AppStyle.surface(this,AppStyle.PAPER,6,true));
     popup.setOutsideTouchable(true);
     popup.setElevation(dp(3));
     homePopup = popup;
@@ -248,16 +247,17 @@ public final class MainActivity extends Activity {
     anchor.getLocationOnScreen(location);
     int x = Math.max(dp(8),Math.min(location[0]+anchor.getWidth()-popupWidth,
         getResources().getDisplayMetrics().widthPixels-popupWidth-dp(8)));
+    popup.setBackgroundDrawable(AppStyle.menuSurface(this, location[0]+anchor.getWidth()/2-x, false));
     int y = Math.max(dp(8),location[1]-popupHeight-dp(8));
     popup.showAtLocation(anchor,Gravity.TOP|Gravity.LEFT,x,y);
   }
 
   private LinearLayout menuItem(String label, int iconResource) {
-    // Center the complete icon-and-label group, including shorter menu labels.
+    // Center visible ink, not the transparent margins inside an icon drawable.
     LinearLayout item = row();
     item.setGravity(Gravity.CENTER);
     item.setPadding(dp(16), dp(12), dp(16), dp(12));
-    item.setMinimumHeight(dp(50));
+    item.setMinimumHeight(dp(48));
     item.setBackground(AppStyle.ripple(this, Color.TRANSPARENT, 6));
     item.setFocusable(true);
     android.widget.ImageView icon = new android.widget.ImageView(this);
@@ -266,9 +266,47 @@ public final class MainActivity extends Activity {
     icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
     item.addView(icon, new LinearLayout.LayoutParams(dp(23), dp(23)));
     LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(-2, -2);
-    labelParams.setMarginStart(dp(8));
-    item.addView(text(label, 15, INK, true), labelParams);
+    labelParams.setMarginStart(dp(12));
+    TextView labelView = text(label, 15, INK, true);
+    item.addView(labelView, labelParams);
+    int opticalOffset = menuOpticalOffset(icon.getDrawable(), labelView);
+    item.setPadding(dp(16)-opticalOffset, dp(12), dp(16)+opticalOffset, dp(12));
     return item;
+  }
+
+  private int menuOpticalOffset(android.graphics.drawable.Drawable icon, TextView label) {
+    int size = dp(23);
+    android.graphics.Bitmap probe = android.graphics.Bitmap.createBitmap(size, size,
+        android.graphics.Bitmap.Config.ARGB_8888);
+    android.graphics.Rect original = new android.graphics.Rect(icon.getBounds());
+    icon.setBounds(0, 0, size, size);
+    icon.draw(new android.graphics.Canvas(probe));
+    icon.setBounds(original);
+    int visibleStart = size;
+    for (int x=0; x<size && visibleStart==size; x++) {
+      for (int y=0; y<size; y++) {
+        if (Color.alpha(probe.getPixel(x,y)) >= 128) { visibleStart=x; break; }
+      }
+    }
+    probe.recycle();
+    android.graphics.Rect textInk = new android.graphics.Rect();
+    String value = label.getText().toString();
+    label.getPaint().getTextBounds(value, 0, value.length(), textInk);
+    int textWidth = (int) Math.ceil(android.text.Layout.getDesiredWidth(value, label.getPaint()));
+    int trailingSpace = Math.max(0, textWidth-textInk.right);
+    return visibleStart==size ? 0 : Math.round((visibleStart-trailingSpace)/2f);
+  }
+
+  private void addMenuItem(LinearLayout panel, LinearLayout item, int index) {
+    if (index > 0) {
+      View divider = new View(this);
+      divider.setBackgroundColor(AppStyle.LINE);
+      LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(-1, dp(1));
+      dividerParams.setMarginStart(dp(8));
+      dividerParams.setMarginEnd(dp(8));
+      panel.addView(divider, dividerParams);
+    }
+    panel.addView(item,new LinearLayout.LayoutParams(-1,-2));
   }
 
   private int menuWidth(LinearLayout panel) {
@@ -280,7 +318,7 @@ public final class MainActivity extends Activity {
 
   private void showMenu(View anchor) {
     LinearLayout panel = column();
-    panel.setPadding(dp(8),dp(8),dp(8),dp(8));
+    panel.setPadding(dp(8),dp(14),dp(8),dp(8));
     ScrollView menuScroll = new ScrollView(this);
     menuScroll.setVerticalScrollBarEnabled(false);
     menuScroll.addView(panel);
@@ -289,7 +327,7 @@ public final class MainActivity extends Activity {
     popup.setBackgroundDrawable(AppStyle.surface(this,AppStyle.PAPER,6,true));
     homePopup = popup;
     popup.setOutsideTouchable(true); popup.setElevation(dp(3));
-    String[] labels = {"手动录入","已取件","站点设置","更多设置"};
+    String[] labels = {"手动录入","已取快递","站点设置","更多设置"};
     int[] icons = {R.drawable.ic_add,R.drawable.ic_history,R.drawable.ic_settings,R.drawable.ic_tune};
     for (int i=0;i<labels.length;i++) {
       final int action=i;
@@ -302,9 +340,10 @@ public final class MainActivity extends Activity {
         else if (action==2) showSettings();
         else openFeature("more",-1,-1);
       });
-      panel.addView(item,new LinearLayout.LayoutParams(-1,-2));
+      addMenuItem(panel, item, i);
     }
     int width = menuWidth(panel);
+    popup.setBackgroundDrawable(AppStyle.menuSurface(this, width-anchor.getWidth()/2, true));
     panel.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
         View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
     popup.setWidth(width);

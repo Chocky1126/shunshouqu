@@ -1,36 +1,40 @@
-# v1.7.5 首页底部操作区对照
+# v1.7.7 轻巧像素菜单对照
 
 **Findings**
 
-未发现需要修复的 P0/P1/P2 问题。橙色录入区与箭头共用像素边框，以细线分隔；一键取出保持浅色次按钮。两个按钮同高、主次比例与选定方案一致。
+未发现剩余可操作的 P0/P1/P2 问题。按用户所选第一款样式实现奶油底、细棕色像素边框、浅色分隔线和指向入口的小尖角；按实际可见边缘修正左右留白。字体及图标偏轻、偏小的问题已在第二轮修复。
 
 **比较目标与证据**
 
-- Source visual truth：`../../outputs/candidates/v1.7.5/Shunshouqu-v1.7.5-design-reference.png`，用户选择的第一个生成结果，1479×1064 像素，设计为 390×280 的局部操作区。
-- Implementation screenshot：`../../outputs/candidates/v1.7.5/Shunshouqu-v1.7.5-normal-home.png`，1080×2340 像素，Android 模拟器原生截图，density 2.75，对应约 393×851dp。Android 界面无 CSS 视口。
-- State：首页有一个待取码 `001234`，菜单关闭，按钮可用；只改底部，不改变列表布局。
-- Full-view comparison：同时查看设计图与原生主页截图，检查按钮分组、主次层次、列表与固定底部的关系。设计图仅展示局部，原生页面的中间留白随列表与可用高度变化，未据此重排主页。
-- Focused region comparison：`../../outputs/candidates/v1.7.5/footer-comparison.html`。在内置浏览器将两个原始图片按 390px 宽度、原宽高比显示，裁取按钮区域并对齐顶部，已查看同屏对照截图。仅用于证据展示，未修改原图。
-- Density normalization：参考图显示比例 390/1479；原生图显示比例 390/1080。对照页面使用 CSS 裁取局部，与产品实现无关。
-- Responsive evidence：同目录 `small-home.png`、`large-text-home.png`、`landscape-home.png`（均带 `Shunshouqu-v1.7.5-` 前缀）及相应 entry-menu 图片；分别为 360×640dp、150% 字号、640×360dp。所有操作区均在屏幕内，文字无换行裁切。
+- Source visual truth：`../../outputs/candidates/v1.7.7/menu-design-selected.png`，1374×1146，来自最近一次三款方案中第一个实际显示结果；用户选择样式 1，并要求修正视觉上偏右。修订概念图 `menu-design-refinement.png` 亦为 1374×1146，但最终左右留白以用户要求和原生像素检测为准。
+- Implementation screenshot：同目录 `Shunshouqu-v1.7.7-normal-right-menu.png`、`Shunshouqu-v1.7.7-normal-left-menu.png`；1080×2340，density 2.75，约 393×851dp；Android 原生界面，无 CSS 视口。
+- State：首页待取码 001234，分别打开右上角与左下角弹出菜单，所有入口完整显示。
+- Full-view comparison：在内置浏览器同屏查看所选设计板与原生主页菜单截图，另查看小屏、150% 字号和横屏原生完整截图；主页底部布局保持此前接受版本。
+- Focused comparison：`../../outputs/candidates/v1.7.7/menu-comparison.html`，在内置浏览器同屏展示两个菜单的参考/原生局部。两轮均查看组合截图，第二轮字重与图标修改后重新捕获并重新加载对照页。原图按相同 170px 菜单宽度裁取显示，保持各自比例；参考是无设备密度的组件设计板，不能假定其像素等于 dp。原生菜单至少 48dp 点击高度，字号增大时行高增长。
+- Visible alignment evidence：`visible-spacing-checks.json`；图标/文字实际深色像素而非控件矩形的左右留白，四种屏幕条件共 28 行，最大差 2 像素。旧 v1.7.6 实测部分项目差 10 像素，图标透明边距为来源。
+- Responsive evidence：同目录 `Shunshouqu-v1.7.7-small-{right,left}-menu.png`（360×640dp）、`large-text-{right,left}-menu.png`（150% 字号）和 `landscape-{right,left}-menu.png`（640×360dp，实际 1920×1080 像素，density 3）。菜单内容无截断，弹出浮层可正常关闭。
 
 **五项检查**
 
-- Fonts and typography：沿用 Android 中文字体与粗体按钮，常规字号为 16sp/15sp，横屏紧凑为 14sp/13sp；主操作白字、次操作深色字。大字号仍完整显示。
-- Spacing and layout rhythm：边距沿用主页 26dp；两操作区宽度约 5:3，间距 10dp；通常高度 56dp，横屏 50dp；分隔线 1×28dp。录入文字与箭头没有独立外框。
-- Colors and tokens：沿用 PRIMARY、TINT、INK 和奶油底色。源图的生成光照纹理不作为 UI 资源，应用继续使用既定纯色主题。
-- Image and asset fidelity：复用现有站点像素图标与上箭头，没有替换品牌资源；选定设计图仅作为对照参考。
-- Copy and content：保留“录入取件码”“一键取出”“左滑标记已取 · 长按编辑”，以及三种录入菜单项目。
+- Fonts and typography：沿用 Android 中文字体与 DEFAULT/BOLD，15sp 标签；字重与所选方案接近，150% 字号完整显示。所有菜单标签均为四个汉字。
+- Spacing and layout rhythm：23dp 图标，12dp 图标文字间距，16dp 基础行内边距；按图标透明边距和字体尾部留白计算光学偏移，保持整组可见内容居中。基础行高 48dp，分隔线 1dp，边框 1.5dp，尖角空间 6dp，阴影 3dp。
+- Colors and tokens：复用 PAPER、INK、LINE 与既有橙色/奶油主题，原生纯色背景保留可读性；生成图的光照纹理不作为 UI 资源。
+- Image quality and asset fidelity：复用现有原生矢量图标，无新增栅格资产、占位图或品牌改动；图标缩放与像素边框清晰。
+- Copy and content：右上角为“手动录入、已取快递、站点设置、更多设置”；左下角为“批量录入、截图识别、扫描短信”；引导及使用文档导航名称同步更新。
 
 **比较记录**
 
-首次原生界面对照无 P0/P1/P2 差异；未因视觉检查进行额外设计迭代。
+1. 第一轮同屏对照发现 [P2] 原生菜单字重偏轻，图标略小；保持结果 blocked。
+2. 恢复既有粗体、23dp 图标与 12dp 间距后重新构建，重新捕获 8 张原生菜单截图并查看第二轮同屏对照。字体/图标问题已修复，可见左右留白再次检测，最大差 2 像素，无剩余 P0/P1/P2。
 
 **Implementation Checklist**
 
-- 已完成单一录入外框、内部分隔线、按钮同高及主次比例。
-- 5 项原有设备测试通过：单条录入、菜单入口、页面导航和全部取出。
-- Lint 0 个错误，调试构建通过。
-- 本次设备检查使用专用 Android 15 模拟器，未声称已在 ColorOS 实机复验。
+- 两个菜单样式、入口文字与可见居中已实现。
+- 13 项菜单/使用引导回归测试通过；Debug 构建及 Lint 通过（0 错误，16 项既有警告）。
+- 数据库 v5、包名和覆盖安装签名沿用，待打包验证 Release。
+
+**Follow-up Polish**
+
+ColorOS 16 真机截图与系统字体由用户覆盖安装后确认；模拟器证据不代表已完成 OPPO 实机验证。
 
 final result: passed
