@@ -29,7 +29,7 @@ final class GuideContent {
         R.drawable.pixel_shop,
         "先设置常用站点",
         "右上角菜单 → 站点设置。",
-        new String[] {"格式怎么写\n一个 x 代表一位数字，例如 x-x-xxx；多种格式每行一种。", "按路线排列\n选择名称和图标，长按拖动或用箭头调整站点顺序。"},
+        new String[] {"格式更好设\n输入示例码生成格式，也可逐行添加；保存前可测试匹配。", "按路线排列\n点“调整顺序”，长按手柄拖动或用箭头排序。"},
         ""),
     new Page(
         R.drawable.pixel_locker,

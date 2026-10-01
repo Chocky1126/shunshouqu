@@ -95,10 +95,10 @@ public class StationIconTest {
       onView(withId(R.id.station_settings)).perform(click());
       onView(withContentDescription("编辑站点 站点一")).perform(scrollTo(), click());
       onView(withContentDescription("选择图标 公司")).perform(scrollTo(), click());
-      ignored.recreate();
+      StationTestActions.recreateForeground();
       onView(withContentDescription("已选择图标 公司")).check(matches(isDisplayed()));
       onView(withText("保存站点")).perform(click());
-      onView(withText("完成")).perform(click());
+      onView(withContentDescription("返回取件清单")).perform(click());
       onView(withContentDescription("站点图标 公司")).check(matches(isDisplayed()));
     }
   }

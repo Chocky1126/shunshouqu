@@ -15,10 +15,14 @@ final class WidgetSupport {
   static void publishPreview(Context context) {
     if (Build.VERSION.SDK_INT < 35) return;
     android.content.SharedPreferences prefs = context.getSharedPreferences("widget_preview", Context.MODE_PRIVATE);
-    if (prefs.getBoolean("v170_published", false)) return;
     try {
-      boolean published = AppWidgetManager.getInstance(context).setWidgetPreview(
-          new ComponentName(context, PickupWidget.class),
+      AppWidgetManager manager = AppWidgetManager.getInstance(context);
+      ComponentName provider = new ComponentName(context, PickupWidget.class);
+      // Package updates may clear the system preview while local preferences survive.
+      if (prefs.getBoolean("v170_published", false) && manager.getWidgetPreview(
+          provider, null, AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN) != null) return;
+      boolean published = manager.setWidgetPreview(
+          provider,
           AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN,
           new RemoteViews(context.getPackageName(), R.layout.pickup_widget_preview));
       if (published) prefs.edit().putBoolean("v170_published", true).apply();

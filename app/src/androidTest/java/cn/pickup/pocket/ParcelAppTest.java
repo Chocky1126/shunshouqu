@@ -129,11 +129,10 @@ public class ParcelAppTest {
             onView(withId(R.id.home_menu)).perform(click());
       onView(withId(R.id.station_settings)).perform(click());
             onView(withContentDescription("编辑站点 站点一"))
-                    .inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog())
                     .perform(click());
             onView(withId(R.id.station_name)).perform(replaceText("小区东门"), closeSoftKeyboard());
             onView(withText("保存站点")).perform(click());
-            onView(withText("完成")).perform(click());
+            onView(withContentDescription("返回取件清单")).perform(click());
             activity.recreate();
             onView(withText("小区东门")).check(matches(isDisplayed()));
             onView(withText("1-2-0345")).check(matches(isDisplayed()));
@@ -145,10 +144,10 @@ public class ParcelAppTest {
       onView(withId(R.id.station_settings)).perform(click());
             onView(withContentDescription("编辑站点 站点一")).perform(click());
             onView(withId(R.id.station_name)).perform(replaceText("  "), closeSoftKeyboard());
-            onView(withText("保存站点")).perform(click());
+            onView(withText("保存站点")).check(matches(org.hamcrest.Matchers.not(isEnabled())));
             onView(withId(R.id.station_name)).check(matches(isDisplayed()));
-            onView(withText("取消")).perform(click());
-            onView(withText("完成")).perform(click());
+            onView(withContentDescription("返回站点设置")).perform(click());
+            onView(withContentDescription("返回取件清单")).perform(click());
             onView(withText("站点一")).check(matches(isDisplayed()));
         }
     }
@@ -184,8 +183,8 @@ public class ParcelAppTest {
       onView(withId(R.id.station_settings)).perform(click());
             onView(withContentDescription("编辑站点 站点一")).perform(click());
             onView(withId(R.id.station_name)).perform(replaceText("小区东门"), closeSoftKeyboard());
-            activity.recreate();
-            onView(withId(R.id.station_name)).inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog()).check(matches(withText("小区东门")));
+            StationTestActions.recreateForeground();
+            onView(withId(R.id.station_name)).check(matches(withText("小区东门")));
         }
     }
     @Test public void collectedHistoryRemainsAccessibleInLandscape() {
@@ -221,9 +220,9 @@ public class ParcelAppTest {
       onView(withId(R.id.station_settings)).perform(click());
         onView(withText("新增站点")).perform(click());
         onView(withId(R.id.station_name)).perform(replaceText(name), closeSoftKeyboard());
-        onView(withId(R.id.station_formats)).perform(replaceText(formats), closeSoftKeyboard());
+        onView(withId(R.id.station_formats)).perform(scrollTo(), replaceText(formats), closeSoftKeyboard());
         onView(withText("保存站点")).perform(click());
-        onView(withText("完成")).perform(click());
+        onView(withContentDescription("返回取件清单")).perform(click());
     }
     @Test public void customStationIsCreatedMatchedEditedAndPersisted() {
         try (ActivityScenario<MainActivity> activity = ActivityScenario.launch(MainActivity.class)) {
@@ -233,9 +232,10 @@ public class ParcelAppTest {
             onView(withId(R.id.home_menu)).perform(click());
       onView(withId(R.id.station_settings)).perform(click());
             onView(withContentDescription("编辑站点 北门自提点")).perform(scrollTo(), click());
-            onView(withId(R.id.station_formats)).perform(replaceText("xxxxx\nxx-xx"), closeSoftKeyboard());
+            onView(withText("添加格式")).perform(scrollTo(), click());
+            onView(withContentDescription("取件码格式 2")).perform(scrollTo(), replaceText("xx-xx"), closeSoftKeyboard());
             onView(withText("保存站点")).perform(click());
-            onView(withText("完成")).perform(click());
+            onView(withContentDescription("返回取件清单")).perform(click());
             add("01-23"); activity.recreate();
             onView(withText("01-23")).perform(scrollTo()).check(matches(isDisplayed()));
         }
@@ -246,9 +246,9 @@ public class ParcelAppTest {
       onView(withId(R.id.station_settings)).perform(click());
             onView(withText("新增站点")).perform(click());
             onView(withId(R.id.station_name)).perform(replaceText("冲突站点"), closeSoftKeyboard());
-            onView(withId(R.id.station_formats)).perform(replaceText("xxxxxx"), closeSoftKeyboard());
-            onView(withText("保存站点")).perform(click());
-            onView(withId(R.id.station_error)).check(matches(withText(containsString("格式"))));
+            onView(withId(R.id.station_formats)).perform(scrollTo(), replaceText("xxxxxx"), closeSoftKeyboard());
+            onView(withText("保存站点")).check(matches(org.hamcrest.Matchers.not(isEnabled())));
+            onView(withId(R.id.station_error)).perform(scrollTo()).check(matches(withText(containsString("格式"))));
             activity.onActivity(a -> { try (ParcelStore saved = new ParcelStore(a)) { assertEquals(3, saved.stations().size()); } });
         }
     }
@@ -258,13 +258,13 @@ public class ParcelAppTest {
             onView(withId(R.id.home_menu)).perform(click());
       onView(withId(R.id.station_settings)).perform(click());
             onView(withContentDescription("编辑站点 站点一")).perform(click());
-            onView(withText("删除站点")).perform(click());
-            onView(withId(R.id.station_error)).check(matches(withText(containsString("待取"))));
-            onView(withText("取消")).perform(click());
+            onView(withText("删除站点")).perform(scrollTo(), click());
+            onView(withId(R.id.station_error)).perform(scrollTo()).check(matches(withText(containsString("待取"))));
+            onView(withContentDescription("返回站点设置")).perform(click());
             onView(withContentDescription("编辑站点 站点三")).perform(scrollTo(), click());
-            onView(withText("删除站点")).perform(click());
+            onView(withText("删除站点")).perform(scrollTo(), click());
             onView(withText("确认删除")).perform(click());
-            onView(withText("完成")).perform(click());
+            onView(withContentDescription("返回取件清单")).perform(click());
             onView(withText("站点三")).check(doesNotExist());
             onView(withText("1-2-0345")).check(matches(isDisplayed()));
         }
@@ -275,10 +275,10 @@ public class ParcelAppTest {
       onView(withId(R.id.station_settings)).perform(click());
             onView(withText("新增站点")).perform(click());
             onView(withId(R.id.station_name)).perform(replaceText("新站草稿"), closeSoftKeyboard());
-            onView(withId(R.id.station_formats)).perform(replaceText("xxx-xx"), closeSoftKeyboard());
-            activity.recreate();
-            onView(withId(R.id.station_name)).inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog()).check(matches(withText("新站草稿")));
-            onView(withId(R.id.station_formats)).inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog()).check(matches(withText("xxx-xx")));
+            onView(withId(R.id.station_formats)).perform(scrollTo(), replaceText("xxx-xx"), closeSoftKeyboard());
+            StationTestActions.recreateForeground();
+            onView(withId(R.id.station_name)).check(matches(withText("新站草稿")));
+            onView(withId(R.id.station_formats)).perform(scrollTo()).check(matches(withText("xxx-xx")));
         }
     }
     @Test public void stationCodesSortNumericallyAfterEntryRestartAndHistoryRestore() {
@@ -315,21 +315,19 @@ public class ParcelAppTest {
             onView(withContentDescription("编辑站点 站点一")).perform(click());
             onView(withId(R.id.station_name)).perform(replaceText("东门"), closeSoftKeyboard());
             onView(withText("保存站点")).perform(click());
-            activity.recreate();
-            onView(withText("完成")).inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog()).check(matches(isDisplayed()));
+            StationTestActions.recreateForeground();
+            onView(withText("新增站点")).check(matches(isDisplayed()));
             onView(withContentDescription("编辑站点 东门"))
-                    .inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog())
                     .perform(click());
-            onView(withText("取消")).perform(click());
-            activity.recreate();
-            onView(withText("完成")).inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog()).check(matches(isDisplayed()));
+            onView(withContentDescription("返回站点设置")).perform(click());
+            StationTestActions.recreateForeground();
+            onView(withText("新增站点")).check(matches(isDisplayed()));
             onView(withContentDescription("编辑站点 站点三"))
-                    .inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog())
                     .perform(scrollTo(), click());
-            onView(withText("删除站点")).perform(click());
+            onView(withText("删除站点")).perform(scrollTo(), click());
             onView(withText("确认删除")).perform(click());
-            activity.recreate();
-            onView(withText("完成")).inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog()).check(matches(isDisplayed()));
+            StationTestActions.recreateForeground();
+            onView(withText("新增站点")).check(matches(isDisplayed()));
         }
     }
     @Test public void longCustomCodeDisplaysEveryDigit() {

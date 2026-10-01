@@ -57,6 +57,22 @@ public final class CodeRules {
     return false;
   }
 
+  public static String formatFromExample(String raw) {
+    String code = normalize(raw);
+    if (code.length() > 32 || !code.matches("[0-9]+(-[0-9]+)*"))
+      throw new IllegalArgumentException("请输入完整取件码，只包含数字和分隔用的 -，最多 32 个字符");
+    return code.replaceAll("[0-9]", "x");
+  }
+
+  public static String exampleForFormat(String raw) {
+    String rule = normalizeFormats(raw);
+    if (rule.indexOf('\n') >= 0) throw new IllegalArgumentException("每行填写一种格式");
+    StringBuilder example = new StringBuilder();
+    int digit = 1;
+    for (char c : rule.toCharArray()) example.append(c == 'x' ? (char) ('0' + digit++ % 10) : c);
+    return example.toString();
+  }
+
   public static int compareCodes(String a, String b) {
     String left = normalize(a);
     String right = normalize(b);

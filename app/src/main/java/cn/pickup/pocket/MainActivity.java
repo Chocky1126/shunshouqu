@@ -2,19 +2,15 @@ package cn.pickup.pocket;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ClipData;
 import android.content.Intent;
 import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowInsets;
@@ -50,12 +46,7 @@ public final class MainActivity extends Activity {
   private android.widget.PopupWindow homePopup;
   private String activeDialogKind;
   private EditText draftCode;
-  private EditText draftStationName, draftStationFormats;
-  private String draftStationIcon;
-  private int editingStationId = -1;
   private final Set<Integer> expandedEmpty = new HashSet<>();
-  private AlertDialog deleteConfirmation;
-  private final Handler handler = new Handler(Looper.getMainLooper());
   @Override
   public void onCreate(Bundle state) {
     super.onCreate(state);
@@ -66,14 +57,6 @@ public final class MainActivity extends Activity {
     render();
     if (state != null) {
       if ("add".equals(state.getString("dialog"))) showAdd(state.getString("draftCode", ""));
-      else if ("settings".equals(state.getString("dialog"))) showSettings();
-      else if ("stationEditor".equals(state.getString("dialog"))) {
-        showStationEditor(
-            state.getInt("stationId", -1),
-            state.getString("draftName"),
-            state.getString("draftFormats"),
-            state.getString("draftIcon"));
-      }
     }
     if (state == null && Onboarding.shouldShow(this)) {
       startActivity(new Intent(this, FeaturesActivity.class).putExtra("mode", "guide"));
@@ -375,7 +358,7 @@ public final class MainActivity extends Activity {
         help.setPadding(dp(16), 0, dp(16), dp(20));
         groups.addView(help);
         Button create = button("新增站点", BLUE, TINTS[0]);
-        create.setOnClickListener(v -> showStationEditor(-1, null, null, null));
+        create.setOnClickListener(v -> startActivity(new Intent(this, StationSettingsActivity.class).putExtra("new_station", true)));
         groups.addView(create);
       }
       scroll.post(() -> scroll.scrollTo(0, previousY));
@@ -581,8 +564,6 @@ public final class MainActivity extends Activity {
     activeDialog = dialog;
     activeDialogKind = "add";
     draftCode = edit;
-    draftStationName = null;
-    draftStationFormats = null;
     dialog.setOnDismissListener(
         d -> {
           if (activeDialog == dialog) {
@@ -599,138 +580,8 @@ public final class MainActivity extends Activity {
   }
 
   private void showSettings() {
-    final List<Station> current;
-    try {
-      current = store.stations();
-    } catch (RuntimeException error) {
-      showError("无法读取站点，请重试。", null);
-      return;
-    }
-    LinearLayout body = dialogBody();
-    body.addView(text("管理取件站点和自动识别格式\n长按站点拖动，或用箭头调整顺序", 13, MUTED, false));
-    if (current.isEmpty()) {
-      space(body, 22);
-      body.addView(text("还没有站点，点击下方新增站点。", 14, MUTED, false));
-    }
-    ScrollView viewport = new ScrollView(this);
-    viewport.addView(body);
-    AlertDialog dialog =
-        new AlertDialog.Builder(this)
-            .setTitle("站点设置")
-            .setView(viewport)
-            .setNegativeButton("完成", null)
-            .setPositiveButton("新增站点", null)
-            .create();
-    final int[] pendingDrop = {-1, -1};
-    for (Station station : current) {
-      space(body, 12);
-      LinearLayout card = row();
-      card.setPadding(dp(12), dp(12), dp(8), dp(12));
-      card.setBackground(AppStyle.surface(this,AppStyle.TINT,14,false));
-      int iconIndex = StationIcons.indexOf(station.iconKey);
-      android.widget.ImageView icon = new android.widget.ImageView(this);
-      icon.setImageResource(StationIcons.RESOURCES[iconIndex]);
-      icon.setContentDescription("站点图标 " + StationIcons.LABELS[iconIndex]);
-      LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dp(38), dp(38));
-      iconParams.setMarginEnd(dp(10));
-      card.addView(icon, iconParams);
-      LinearLayout info = column();
-      info.addView(text(station.name, 17, INK, true));
-      space(info, 6);
-      info.addView(text(station.formats.replace("\n", " / "), 12, MUTED, false));
-      card.addView(info, new LinearLayout.LayoutParams(0, -2, 1));
-      Button edit = button("编辑", INK, Color.WHITE);
-      edit.setContentDescription("编辑站点 " + station.name);
-      edit.setOnClickListener(
-          v -> {
-            dialog.dismiss();
-            showStationEditor(station.id, null, null, null);
-          });
-      card.addView(edit);
-      LinearLayout stationBlock = column();
-      stationBlock.addView(card);
-      LinearLayout moves = row();
-      Button up = button("↑ 上移", MUTED, BG);
-      up.setTextSize(12);
-      up.setContentDescription("上移站点 " + station.name);
-      Button down = button("↓ 下移", MUTED, BG);
-      down.setTextSize(12);
-      down.setContentDescription("下移站点 " + station.name);
-      int position = current.indexOf(station);
-      up.setEnabled(position > 0);
-      down.setEnabled(position < current.size() - 1);
-      up.setOnClickListener(v -> moveStation(current, station.id, position - 1, dialog));
-      down.setOnClickListener(v -> moveStation(current, station.id, position + 1, dialog));
-      moves.addView(up, new LinearLayout.LayoutParams(0, -2, 1));
-      moves.addView(down, new LinearLayout.LayoutParams(0, -2, 1));
-      stationBlock.addView(moves);
-      body.addView(stationBlock);
-      View.OnLongClickListener drag =
-          v ->
-              v.startDragAndDrop(
-                  ClipData.newPlainText("站点排序", ""),
-                  new View.DragShadowBuilder(card),
-                  Integer.valueOf(station.id),
-                  0);
-      card.setOnLongClickListener(drag);
-      info.setOnLongClickListener(drag);
-      stationBlock.setOnDragListener(
-          (v, event) -> {
-            if (event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
-              if (pendingDrop[0] >= 0 && event.getResult()) {
-                int sourceId = pendingDrop[0], target = pendingDrop[1];
-                pendingDrop[0] = -1;
-                // Keep the source window alive until Android has finished the drag session.
-                handler.post(
-                    () -> {
-                      if (dialog.isShowing()) moveStation(current, sourceId, target, dialog);
-                    });
-              } else pendingDrop[0] = -1;
-              return true;
-            }
-            if (!(event.getLocalState() instanceof Integer)) return false;
-            if (event.getAction() == DragEvent.ACTION_DROP) {
-              pendingDrop[0] = (Integer) event.getLocalState();
-              pendingDrop[1] = position;
-            }
-            return true;
-          });
-    }
-    dialog.setOnShowListener(
-        d ->
-            dialog
-                .getButton(AlertDialog.BUTTON_POSITIVE)
-                .setOnClickListener(
-                    v -> {
-                      dialog.dismiss();
-                      showStationEditor(-1, null, null, null);
-                    }));
-    activeDialog = dialog;
-    activeDialogKind = "settings";
-    draftCode = null;
-    draftStationName = null;
-    draftStationFormats = null;
-    dialog.setOnDismissListener(
-        d -> {
-          if (activeDialog == dialog) activeDialog = null;
-        });
-    dialog.show();
-    AppStyle.dialog(dialog);
-  }
-
-  private void moveStation(List<Station> stations, int sourceId, int target, AlertDialog dialog) {
-    ArrayList<Integer> ids = new ArrayList<>();
-    for (Station station : stations) ids.add(station.id);
-    if (target < 0 || target >= ids.size() || !ids.remove(Integer.valueOf(sourceId))) return;
-    ids.add(target, sourceId);
-    try {
-      store.reorderStations(ids);
-      dialog.dismiss();
-      render();
-      showSettings();
-    } catch (RuntimeException e) {
-      showError("调整顺序失败，请重试。", null);
-    }
+    if (activeDialog != null) activeDialog.dismiss();
+    startActivity(new Intent(this, StationSettingsActivity.class));
   }
 
   private void openFeature(String mode, int station, long parcel) {
@@ -751,218 +602,6 @@ public final class MainActivity extends Activity {
   protected void onResume() {
     super.onResume();
     if (store != null && groups != null) render();
-  }
-
-  private void showStationEditor(
-      int stationId, String initialName, String initialFormats, String initialIcon) {
-    Station station = null;
-    if (stationId >= 0) {
-      try {
-        for (Station value : store.stations()) if (value.id == stationId) station = value;
-      } catch (RuntimeException error) {
-        showError("无法读取站点，请重试。", null);
-        return;
-      }
-      if (station == null) {
-        showError("站点已不存在，请重新打开站点设置。", null);
-        return;
-      }
-    }
-    LinearLayout body = dialogBody();
-    body.addView(text("站点图标", 13, INK, true));
-    space(body, 8);
-    String[] selectedIcon = {
-      initialIcon != null ? initialIcon : station == null ? "shop" : station.iconKey
-    };
-    StationIcons.checked(selectedIcon[0]);
-    android.widget.GridLayout iconGrid = new android.widget.GridLayout(this);
-    iconGrid.setColumnCount(4);
-    iconGrid.setRowCount(2);
-    ArrayList<android.widget.ImageButton> iconButtons = new ArrayList<>();
-    for (int i = 0; i < StationIcons.KEYS.length; i++) {
-      final int iconIndex = i;
-      LinearLayout choice = column();
-      choice.setGravity(Gravity.CENTER);
-      choice.setPadding(dp(3), dp(3), dp(3), dp(5));
-      android.widget.ImageButton iconButton = new android.widget.ImageButton(this);
-      iconButton.setImageResource(StationIcons.RESOURCES[i]);
-      iconButton.setScaleType(android.widget.ImageView.ScaleType.CENTER_INSIDE);
-      iconButton.setPadding(dp(8), dp(8), dp(8), dp(8));
-      iconButtons.add(iconButton);
-      iconButton.setOnClickListener(
-          v -> {
-            selectedIcon[0] = StationIcons.KEYS[iconIndex];
-            draftStationIcon = selectedIcon[0];
-            styleIconChoices(iconButtons, selectedIcon[0]);
-          });
-      choice.addView(iconButton, new LinearLayout.LayoutParams(dp(54), dp(54)));
-      TextView iconLabel = text(StationIcons.LABELS[i], 11, MUTED, false);
-      iconLabel.setGravity(Gravity.CENTER);
-      choice.addView(iconLabel, new LinearLayout.LayoutParams(-1, -2));
-      android.widget.GridLayout.LayoutParams cell =
-          new android.widget.GridLayout.LayoutParams(
-              android.widget.GridLayout.spec(i / 4),
-              android.widget.GridLayout.spec(i % 4, 1f));
-      cell.width = 0;
-      cell.height = -2;
-      iconGrid.addView(choice, cell);
-    }
-    styleIconChoices(iconButtons, selectedIcon[0]);
-    body.addView(iconGrid, new LinearLayout.LayoutParams(-1, -2));
-    space(body, 18);
-    body.addView(text("站点名称", 13, INK, true));
-    space(body, 8);
-    EditText name = input("例如 小区东门");
-    name.setId(R.id.station_name);
-    name.setTextSize(17);
-    name.setText(initialName != null ? initialName : station == null ? "" : station.name);
-    body.addView(name);
-    space(body, 18);
-    body.addView(text("取件码格式", 13, INK, true));
-    space(body, 8);
-    EditText formats = input("例如 x-x-xxx\nxx-x-xxx");
-    formats.setId(R.id.station_formats);
-    formats.setInputType(
-        InputType.TYPE_CLASS_TEXT
-            | InputType.TYPE_TEXT_FLAG_MULTI_LINE
-            | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-    formats.setSingleLine(false);
-    formats.setMinLines(2);
-    formats.setMaxLines(5);
-    formats.setTextSize(17);
-    formats.setTypeface(Typeface.MONOSPACE);
-    formats.setGravity(Gravity.TOP | Gravity.START);
-    formats.setText(
-        initialFormats != null ? initialFormats : station == null ? "" : station.formats);
-    body.addView(formats);
-    space(body, 10);
-    body.addView(text("一个 x 表示一位数字，- 原样匹配。\n同一站点多种格式，每行填一种。", 12, MUTED, false));
-    if (station != null) {
-      space(body, 8);
-      body.addView(text("修改格式仅影响之后录入的取件码，已有记录保留在本站点。", 12, MUTED, false));
-    }
-    space(body, 12);
-    TextView errorText = text("", 13, BLUE, false);
-    errorText.setId(R.id.station_error);
-    body.addView(errorText);
-    ScrollView viewport = new ScrollView(this);
-    viewport.addView(body);
-    AlertDialog.Builder builder =
-        new AlertDialog.Builder(this)
-            .setTitle(station == null ? "新增站点" : "编辑站点")
-            .setView(viewport)
-            .setNegativeButton(
-                "取消",
-                (d, w) -> {
-                  d.dismiss();
-                  showSettings();
-                })
-            .setPositiveButton("保存站点", null);
-    if (station != null) builder.setNeutralButton("删除站点", null);
-    AlertDialog dialog = builder.create();
-    dialog.setOnShowListener(
-        d -> {
-          dialog
-              .getButton(AlertDialog.BUTTON_POSITIVE)
-              .setOnClickListener(
-                  v -> {
-                    try {
-                      if (stationId < 0)
-                        store.addStation(
-                            name.getText().toString(),
-                            formats.getText().toString(),
-                            selectedIcon[0]);
-                      else
-                        store.updateStation(
-                            stationId,
-                            name.getText().toString(),
-                            formats.getText().toString(),
-                            selectedIcon[0]);
-                      dialog.dismiss();
-                      render();
-                      showSettings();
-                    } catch (IllegalArgumentException error) {
-                      errorText.setText(error.getMessage());
-                    } catch (RuntimeException error) {
-                      errorText.setText("保存失败，请重试。原有设置未更改。");
-                    }
-                  });
-          if (stationId >= 0)
-            dialog
-                .getButton(AlertDialog.BUTTON_NEUTRAL)
-                .setOnClickListener(
-                    v -> {
-                      try {
-                        for (Parcel item : store.all())
-                          if (item.stationId == stationId) {
-                            errorText.setText("本站点还有待取件，请先取完再删除站点。");
-                            return;
-                          }
-                        deleteConfirmation =
-                            new AlertDialog.Builder(this)
-                                .setTitle("删除站点")
-                                .setMessage("确定删除这个站点吗？删除后可重新添加。")
-                                .setNegativeButton("取消", null)
-                                .setPositiveButton(
-                                    "确认删除",
-                                    (confirmation, w) -> {
-                                      try {
-                                        store.deleteStation(stationId);
-                                        dialog.dismiss();
-                                        render();
-                                        showSettings();
-                                      } catch (IllegalArgumentException error) {
-                                        errorText.setText(error.getMessage());
-                                      } catch (RuntimeException error) {
-                                        errorText.setText("删除站点失败，请重试。");
-                                      }
-                                    })
-                                .create();
-                        deleteConfirmation.setOnDismissListener(
-                            confirmation -> deleteConfirmation = null);
-                        deleteConfirmation.show();
-                        AppStyle.dialog(deleteConfirmation);
-                      } catch (RuntimeException error) {
-                        errorText.setText("无法读取取件记录，请重试。");
-                      }
-                    });
-        });
-    editingStationId = stationId;
-    draftStationName = name;
-    draftStationFormats = formats;
-    draftStationIcon = selectedIcon[0];
-    activeDialog = dialog;
-    activeDialogKind = "stationEditor";
-    draftCode = null;
-    dialog.setOnCancelListener(
-        d -> {
-          d.dismiss();
-          showSettings();
-        });
-    dialog.setOnDismissListener(
-        d -> {
-          if (activeDialog == dialog) {
-            activeDialog = null;
-            draftStationName = null;
-            draftStationFormats = null;
-            draftStationIcon = null;
-          }
-        });
-    dialog.show();
-    AppStyle.dialog(dialog);
-  }
-
-  private void styleIconChoices(
-      List<android.widget.ImageButton> buttons, String selectedIcon) {
-    for (int i = 0; i < buttons.size(); i++) {
-      boolean selected = StationIcons.KEYS[i].equals(selectedIcon);
-      android.widget.ImageButton button = buttons.get(i);
-      button.setBackground(
-          AppStyle.surface(this, selected ? AppStyle.TINT : AppStyle.PAPER, 6, true));
-      button.setContentDescription(
-          (selected ? "已选择图标 " : "选择图标 ") + StationIcons.LABELS[i]);
-      button.setSelected(selected);
-    }
   }
 
   private void removeParcel(Parcel parcel) {
@@ -997,21 +636,13 @@ public final class MainActivity extends Activity {
       if ("add".equals(activeDialogKind) && draftCode != null) {
         state.putString("dialog", "add");
         state.putString("draftCode", draftCode.getText().toString());
-      } else if ("stationEditor".equals(activeDialogKind) && draftStationName != null) {
-        state.putString("dialog", "stationEditor");
-        state.putInt("stationId", editingStationId);
-        state.putString("draftName", draftStationName.getText().toString());
-        state.putString("draftFormats", draftStationFormats.getText().toString());
-        state.putString("draftIcon", draftStationIcon);
-      } else if ("settings".equals(activeDialogKind)) state.putString("dialog", "settings");
+      }
     }
   }
 
   @Override
   public void onDestroy() {
-    handler.removeCallbacksAndMessages(null);
     if (homePopup != null) homePopup.dismiss();
-    if (deleteConfirmation != null) deleteConfirmation.dismiss();
     if (activeDialog != null) activeDialog.dismiss();
     store.close();
     super.onDestroy();

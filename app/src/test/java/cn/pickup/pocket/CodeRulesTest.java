@@ -4,6 +4,23 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class CodeRulesTest {
+    @Test public void generatesExactLengthRulesFromNormalizedExampleCodes() {
+        assertEquals("xx-x-xxx", CodeRules.formatFromExample("１２－２－５４２"));
+        assertEquals("xxxxxx", CodeRules.formatFromExample("001234"));
+        assertEquals("x-x-xxxx", CodeRules.formatFromExample(" 1-2-0034 "));
+        assertEquals("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", CodeRules.formatFromExample("12345678901234567890123456789012"));
+        for (String value : new String[]{"", "取件码123456", "1--2", "-123", "123-", "1 2", "1\n2", "123456789012345678901234567890123"}) {
+            assertThrows(value, IllegalArgumentException.class, () -> CodeRules.formatFromExample(value));
+        }
+    }
+
+    @Test public void previewsAreValidCodesForTheExactSingleRule() {
+        assertEquals("12-3-456", CodeRules.exampleForFormat("xx-x-xxx"));
+        assertEquals("123456", CodeRules.exampleForFormat("XXXXXX"));
+        assertEquals("1-2-3456", CodeRules.exampleForFormat("x-x-xxxx"));
+        assertThrows(IllegalArgumentException.class, () -> CodeRules.exampleForFormat("x-x\nxx"));
+    }
+
     @Test public void normalizesDigitsHyphensAndOnlyEdgeWhitespace() {
         assertEquals("1-2-0034", CodeRules.normalize("\u0085\u00a0\u3000１－２－００３４\u202f"));
         for (String dash : new String[]{"－", "﹣", "‐", "‑", "‒", "–", "—", "−"}) {

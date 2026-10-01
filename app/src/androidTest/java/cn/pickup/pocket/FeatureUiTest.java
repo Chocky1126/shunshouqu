@@ -186,8 +186,10 @@ public class FeatureUiTest {
     try (ActivityScenario<MainActivity> a = ActivityScenario.launch(MainActivity.class)) {
       onView(withId(R.id.home_menu)).perform(click());
       onView(withId(R.id.station_settings)).perform(click());
+      onView(withText("调整顺序")).perform(click());
       onView(withContentDescription("上移站点 站点三")).perform(scrollTo(), click());
-      onView(withText("完成")).perform(click());
+      onView(withText("完成排序")).perform(click());
+      onView(withContentDescription("返回取件清单")).perform(click());
       a.recreate();
       try (ParcelStore s = new ParcelStore(context)) {
         assertEquals(2, s.stations().get(1).id);

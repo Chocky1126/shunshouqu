@@ -8,6 +8,11 @@
     <item name="station_name" type="id" />
     <item name="station_formats" type="id" />
     <item name="station_error" type="id" />
+    <item name="station_settings_scroll" type="id" />
+    <item name="station_settings_footer" type="id" />
+    <item name="station_example" type="id" />
+    <item name="station_test_code" type="id" />
+    <item name="station_test_result" type="id" />
     <item name="total_count" type="id" />
     <item name="home_complete_all" type="id" />
     <item name="batch_source" type="id" />

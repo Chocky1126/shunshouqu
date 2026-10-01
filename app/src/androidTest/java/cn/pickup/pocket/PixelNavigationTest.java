@@ -36,7 +36,7 @@ public class PixelNavigationTest {
       for (String title:new String[]{"粘贴录入","截图识别","扫描近三天短信"})
         onView(withText(title)).check(doesNotExist());
       onView(withText("站点设置")).perform(click());
-      onView(withText("完成")).perform(click());
+      onView(withContentDescription("返回取件清单")).perform(click());
       onView(withId(R.id.add_code)).check(matches(isDisplayed()));
       onView(withId(R.id.home_menu)).perform(click());
       onView(withText("已取快递")).perform(click());

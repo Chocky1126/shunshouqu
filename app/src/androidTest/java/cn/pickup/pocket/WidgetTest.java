@@ -140,6 +140,22 @@ public class WidgetTest {
   }
 
   @Test
+  public void missingSystemPreviewIsRebuiltEvenWhenOldFlagSurvivesUpgrade() {
+    if (Build.VERSION.SDK_INT < 35) return;
+    Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+    ComponentName provider = new ComponentName(context, PickupWidget.class);
+    AppWidgetManager manager = AppWidgetManager.getInstance(context);
+    manager.removeWidgetPreview(provider, AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN);
+    context.getSharedPreferences("widget_preview", Context.MODE_PRIVATE).edit()
+        .putBoolean("v170_published", true).commit();
+    assertTrue(manager.getWidgetPreview(provider, null,
+        AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN) == null);
+    WidgetSupport.publishPreview(context);
+    assertTrue("An upgrade must repair the missing system preview", manager.getWidgetPreview(
+        provider, null, AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN) != null);
+  }
+
+  @Test
   public void pinRequestCarriesASizedPreviewAcrossProcessBoundary() {
     Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
     android.os.Parcel parcel = android.os.Parcel.obtain();
