@@ -10,12 +10,12 @@
 
 **Shunshouqu — an offline Android parcel pickup code manager.**
 
-[![Latest release](https://img.shields.io/github/v/release/Chocky1126/shunshouqu-android?style=flat-square&color=D56720&label=正式版)](https://github.com/Chocky1126/shunshouqu-android/releases/latest)
-[![Android](https://img.shields.io/badge/Android-8.0%2B-665B48?style=flat-square)](https://github.com/Chocky1126/shunshouqu-android/releases/latest)
+[![Latest release](https://img.shields.io/github/v/release/Chocky1126/shunshouqu?style=flat-square&color=D56720&label=正式版)](https://github.com/Chocky1126/shunshouqu/releases/latest)
+[![Android](https://img.shields.io/badge/Android-8.0%2B-665B48?style=flat-square)](https://github.com/Chocky1126/shunshouqu/releases/latest)
 [![Offline](https://img.shields.io/badge/数据-仅存本机-8C754E?style=flat-square)](#隐私与权限)
-[![GitHub stars](https://img.shields.io/github/stars/Chocky1126/shunshouqu-android?style=flat-square&color=D56720&label=Star)](https://github.com/Chocky1126/shunshouqu-android/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/Chocky1126/shunshouqu?style=flat-square&color=D56720&label=Star)](https://github.com/Chocky1126/shunshouqu/stargazers)
 
-**[下载安卓安装包](https://github.com/Chocky1126/shunshouqu-android/releases/latest)** · [使用指南](docs/user-guide.md) · [更新记录](docs/changelog.md) · [反馈问题](https://github.com/Chocky1126/shunshouqu-android/issues/new/choose)
+**[下载安卓安装包](https://github.com/Chocky1126/shunshouqu/releases/latest)** · [使用指南](docs/user-guide.md) · [更新记录](docs/changelog.md) · [反馈问题](https://github.com/Chocky1126/shunshouqu/issues/new/choose)
 
 如果顺手取让你少翻一次短信，欢迎点一下右上角 **⭐ Star**，也把它分享给常取快递的朋友。
 
@@ -62,7 +62,7 @@
 
 ## 下载与开始使用
 
-1. 打开 **[最新正式版](https://github.com/Chocky1126/shunshouqu-android/releases/latest)**，下载名称以 `arm64.apk` 结尾的安装包。支持 Android 8.0 及以上的 ARM64 设备。
+1. 打开 **[最新正式版](https://github.com/Chocky1126/shunshouqu/releases/latest)**，下载名称以 `arm64.apk` 结尾的安装包。支持 Android 8.0 及以上的 ARM64 设备。
 2. 在右上角菜单的“站点设置”中，改好常去的站点名称与格式。`x` 表示一位数字，多种格式每行一种，例如 `x-x-xxx` 和 `xx-x-xxx`。
 3. 点“录入取件码”添加单条，或点旁边的上箭头，选择批量录入、截图识别、扫描短信。识别结果核对后再保存。
 4. 取完点方框或左滑，误操作可在“已取快递”中恢复。
@@ -106,9 +106,9 @@
 喜欢这个小工具，可以 **Star 收藏**，或分享仓库链接：
 
 > 顺手取：一个离线的安卓快递取件码管理工具，支持短信提取、截图识别、自动分站点和桌面小部件。
-> https://github.com/Chocky1126/shunshouqu-android
+> https://github.com/Chocky1126/shunshouqu
 
-遇到问题请 [提交反馈](https://github.com/Chocky1126/shunshouqu-android/issues/new/choose)，附上应用版本、手机型号、系统版本和复现步骤。欢迎建议、文档改进和代码贡献，见 [贡献指南](CONTRIBUTING.md)。
+遇到问题请 [提交反馈](https://github.com/Chocky1126/shunshouqu/issues/new/choose)，附上应用版本、手机型号、系统版本和复现步骤。欢迎建议、文档改进和代码贡献，见 [贡献指南](CONTRIBUTING.md)。
 
 ## 开发与致谢
 
