@@ -4,7 +4,7 @@
 
 ## 反馈问题
 
-在 [Issues](https://github.com/Chocky1126/shunshouqu-android/issues/new/choose) 选择“问题反馈”，填写应用版本、手机型号、Android / 系统版本、操作步骤，以及期望与实际结果。界面问题可以附截图。
+在 [Issues](https://github.com/Chocky1126/shunshouqu/issues/new/choose) 选择“问题反馈”，填写应用版本、手机型号、Android / 系统版本、操作步骤，以及期望与实际结果。界面问题可以附截图。
 
 请把截图中的手机号、真实取件码和短信内容遮住。复现格式问题时，使用保持相同格式的演示码即可，例如 `12-2-345`。
 
