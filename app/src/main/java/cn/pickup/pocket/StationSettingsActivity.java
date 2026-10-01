@@ -235,7 +235,7 @@ public final class StationSettingsActivity extends Activity {
       icon.setPadding(dp(8), dp(8), dp(8), dp(8)); iconButtons.add(icon);
       icon.setOnClickListener(v -> { iconKey = StationIcons.KEYS[index]; styleIcons(); });
       choice.addView(icon, new LinearLayout.LayoutParams(dp(52), dp(52)));
-      TextView label = note(StationIcons.LABELS[i]); label.setTextSize(11); label.setPadding(0, dp(4), 0, 0);
+      TextView label = note(StationIcons.LABELS[i]); label.setTextSize(11); label.setGravity(Gravity.CENTER_HORIZONTAL); label.setPadding(0, dp(4), 0, 0);
       choice.addView(label);
       GridLayout.LayoutParams cell = new GridLayout.LayoutParams(GridLayout.spec(i / 4), GridLayout.spec(i % 4, 1f));
       cell.width = 0; icons.addView(choice, cell);

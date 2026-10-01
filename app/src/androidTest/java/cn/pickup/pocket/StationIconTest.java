@@ -102,4 +102,45 @@ public class StationIconTest {
       onView(withContentDescription("站点图标 公司")).check(matches(isDisplayed()));
     }
   }
+  private void assertIconLabelsCentered() {
+    for (String name : StationIcons.LABELS) {
+      onView(withText(name)).perform(scrollTo()).check((view, missing) -> {
+        if (missing != null) throw missing;
+        android.widget.TextView label = (android.widget.TextView) view;
+        android.view.ViewGroup pair = (android.view.ViewGroup) label.getParent();
+        android.view.View icon = pair.getChildAt(0);
+        int[] labelPosition = new int[2], iconPosition = new int[2], pairPosition = new int[2];
+        label.getLocationInWindow(labelPosition); icon.getLocationInWindow(iconPosition);
+        pair.getLocationInWindow(pairPosition);
+        double iconCenter = iconPosition[0] + icon.getWidth() / 2.0;
+        double pairCenter = pairPosition[0] + pair.getWidth() / 2.0;
+        assertEquals("Icon centered in its cell: " + name, pairCenter, iconCenter, AppStyle.dp(view.getContext(), 1));
+        android.text.Layout layout = label.getLayout();
+        for (int line = 0; line < layout.getLineCount(); line++) {
+          double textCenter = labelPosition[0] + label.getCompoundPaddingLeft()
+              + (layout.getLineLeft(line) + layout.getLineRight(line)) / 2.0;
+          assertEquals("Label aligned with icon: " + name, iconCenter, textCenter, AppStyle.dp(view.getContext(), 1));
+        }
+      });
+    }
+  }
+
+  @Test public void newStationIconLabelsAreCentered() {
+    try (ActivityScenario<MainActivity> activity = ActivityScenario.launch(MainActivity.class)) {
+      onView(withId(R.id.home_menu)).perform(click());
+      onView(withId(R.id.station_settings)).perform(click());
+      onView(withText("新增站点")).perform(click());
+      assertIconLabelsCentered();
+    }
+  }
+
+  @Test public void editedStationIconLabelsAreCenteredAfterRecreation() {
+    try (ActivityScenario<MainActivity> activity = ActivityScenario.launch(MainActivity.class)) {
+      onView(withId(R.id.home_menu)).perform(click());
+      onView(withId(R.id.station_settings)).perform(click());
+      onView(withContentDescription("编辑站点 站点一")).perform(click());
+      StationTestActions.recreateForeground();
+      assertIconLabelsCentered();
+    }
+  }
 }
